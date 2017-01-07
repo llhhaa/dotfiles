@@ -1,4 +1,4 @@
-"" Vundle config
+" Vundle config
 filetype off  " required for Vundle
 
 " set the runtime path to include Vundle and initialize
@@ -13,6 +13,8 @@ Plugin 'tpope/vim-fugitive.git'
 Plugin 'scrooloose/nerdtree'
 Plugin 'mxw/vim-jsx'
 Plugin 'scooloose/syntastic'
+Plugin 'wikitopian/hardmode'
+Plugin 'mtscout6/syntastic-local-eslint.vim' " use project eslint
 
 " all of yourPlugins must be added before the following line
 call vundle#end() "required
@@ -25,7 +27,7 @@ set showcmd			" display incomplete commands
 set number      " show line numbers
 filetype plugin indent on
 
-" colorschemes
+"" colorschemes
 colorscheme neodark
 
 "" Whitespace
@@ -33,6 +35,20 @@ set nowrap 			" don't wrap lines
 set tabstop=2 shiftwidth=2	" a tab is two spaces (or set this to 4)
 set expandtab			" use spaces, not tabs (optional)
 set backspace=indent,eol,start	" backspace through everything in insert mode
+
+" whitespace cleanup function
+function! StripTrailingWhitespace()
+  if !&binary && &filetype != 'diff'
+    normal mz
+    normal Hmy
+    %s/\s\+$//e
+    normal 'yz<CR>
+    normal `z
+  endif
+endfunction
+
+"" Folding
+set foldmethod=indent
 
 "" Searching
 set hlsearch			" highlight matches
@@ -42,17 +58,27 @@ set smartcase			" ... unless they contain at least one capital letter
 
 "" Linting
 "" Manually invoke lint syntax check with :SyntasticCheck
-let g:jsx_ext_required=0
-let g:syntastic_check_on_open=1
-let g:syntastic_enable_signs=1
-let g:syntastic_auto_jump=0
-let g:syntastic_auto_loc_list=0
-let g:syntastic_javascript_checkers=['eslint']
+let g:syntastic_mode_map = { 'mode': 'active',
+                            \ 'active_filetypes': ['javascript'],
+                            \ 'passive_filetypes': [] }
 
-" CtrlP
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+
+let g:jsx_ext_required = 0
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 0
+let g:syntastic_check_on_open = 0
+let g:syntastic_check_on_wq = 0
+" attempted fix for nvm/vim/eslint path issue
+" let g:syntastic_javascript_eslint_exec = '~/.nvm/versions/node/v4.2.1/bin/eslint'
+let g:syntastic_javascript_checkers = ['eslint']
+
+"" CtrlP
 set runtimepath^=~/.vim/bundle/ctrlp.vim
 
-" The Silver Searcher
+"" The Silver Searcher
 if executable('ag')
   " Use ag over grep
   set grepprg=ag\ --nogroup\ --nocolor
@@ -63,6 +89,9 @@ if executable('ag')
   " ag is fast enough that CtrlP doesn't need to cache
   let g:ctrlp_use_caching = 0
 endif
+
+"" HardMode
+autocmd VimEnter,BufNewFile,BufReadPost * silent! call HardMode() " call on start
 
 "" Change to repos directory
 cd /Users/label-triad/repos
