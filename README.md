@@ -1,2 +1,1 @@
-# l-abel-vim
-vimrc and other vim scraps
+# l-abel-dotfiles
