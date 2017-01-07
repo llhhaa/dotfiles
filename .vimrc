@@ -49,6 +49,7 @@ endfunction
 
 "" Folding
 set foldmethod=indent
+set foldcolumn=5
 
 "" Searching
 set hlsearch			" highlight matches
