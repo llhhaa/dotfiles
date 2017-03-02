@@ -89,7 +89,6 @@ function! Whitespace() " whitespace and endline cleanup function
     normal Hmy
     %s/\s\+$//e
     %s#\($\n\s*\)\+\%$##
-    "" for regex breakdown: http://stackoverflow.com/questions/7495932/how-can-i-trim-blank-lines-at-the-end-of-file-in-vim
     normal Go
     stopinsert
     normal 'yz<CR>
@@ -97,6 +96,7 @@ function! Whitespace() " whitespace and endline cleanup function
     echo "Whitespace cleanup complete."
   endif
 endfunction
+"" for regex breakdown: http://stackoverflow.com/questions/7495932/how-can-i-trim-blank-lines-at-the-end-of-file-in-vim
 
 
 "" {{{{ Folding }}}}
