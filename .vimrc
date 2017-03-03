@@ -7,7 +7,7 @@
 """ misc
 """ fzf
 
-" Core Vim 
+" Core Vim
 """ general
 """ whitespace
 """ folding
@@ -72,8 +72,10 @@ syntax enable
 set encoding=utf-8
 set showcmd			" display incomplete commands
 set number      " show line numbers
+set relativenumber
 set wildmenu
 set wildignore +=**/node_modules/**
+set switchbuf=useopen,usetab
 filetype plugin indent on
 au FocusGained,BufEnter * checktime "like gVim, prompt if file changed
 
@@ -83,20 +85,22 @@ set nowrap
 set tabstop=2 shiftwidth=2
 set expandtab			" use spaces, not tabs (optional)
 set backspace=indent,eol,start	" backspace through everything in insert mode
+
+" Whitespace cleanup
 function! Whitespace() " whitespace and endline cleanup function
   if !&binary && &filetype != 'diff'
     normal mz
     normal Hmy
+    $put _
     %s/\s\+$//e
     %s#\($\n\s*\)\+\%$##
-    normal Go
-    stopinsert
+    $put _
     normal 'yz<CR>
     normal `z
     echo "Whitespace cleanup complete."
   endif
 endfunction
-"" for regex breakdown: http://stackoverflow.com/questions/7495932/how-can-i-trim-blank-lines-at-the-end-of-file-in-vim
+"" for regex breakdown: http://stackoverflow.com/q/7495932/
 
 
 "" {{{{ Folding }}}}
@@ -186,16 +190,52 @@ noremap <Leader>r <C-r>
 noremap <Leader>w <C-w>
 noremap <Leader>x <C-x>
 noremap <Leader>F :FZF<Cr>
-noremap <Leader>v :call VimRC()<Cr>
+noremap <Leader>v :call GetVimRC()<Cr>
 noremap <Leader>= :call Whitespace()<Cr>
 noremap <Leader>/ :noh<Cr>
 noremap <Leader>p :cd %:p:h<Cr>
 noremap <Leader>h :cd ~/repos/<Cr>
 noremap gO :!open -a Adobe\ Photoshop\ CS5 <cfile><CR>
 
-function! VimRC()
-  :tabnew
-  :e $MYVIMRC
+function! WhichTab(filename)
+    " Try to determine whether file is open in any tab.  
+    " Return number of tab it's open in
+    " http://stackoverflow.com/q/35465597/
+    let buffername = bufname(a:filename)
+    if buffername == ""
+        return 0
+    endif
+    let buffernumber = bufnr(buffername)
+
+    " tabdo will loop through pages and leave you on the last one;
+    " this is to make sure we don't leave the current page
+    let currenttab = tabpagenr()
+    let buffs_arr = []
+    tabdo let buffs_arr += tabpagebuflist()
+
+    " return to current page
+    exec "tabnext ".currenttab
+
+    " Start checking tab numbers for matches
+    let i = 0
+    for bnum in buffs_arr
+        let i += 1
+        echo "bnum: ".bnum." buff: ".buffernumber." i: ".i
+        if bnum == buffernumber
+            return i
+        endif
+    endfor
+endfunction
+
+function! GetVimRC()
+  let bnr = WhichTab("~/.vimrc")
+  if bnr > 0
+    sb ~/.vimrc
+  else
+    $tabnew
+    e $MYVIMRC
+  endif
+  echo bnr
 endfunction
 
 "" {{{{ Plugin-specific settings }}}}
