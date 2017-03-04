@@ -190,52 +190,39 @@ noremap <Leader>r <C-r>
 noremap <Leader>w <C-w>
 noremap <Leader>x <C-x>
 noremap <Leader>F :FZF<Cr>
-noremap <Leader>v :call GetVimRC()<Cr>
+noremap <Leader>v :call ToggleVimrc()<Cr>
 noremap <Leader>= :call Whitespace()<Cr>
 noremap <Leader>/ :noh<Cr>
 noremap <Leader>p :cd %:p:h<Cr>
 noremap <Leader>h :cd ~/repos/<Cr>
 noremap gO :!open -a Adobe\ Photoshop\ CS5 <cfile><CR>
 
-function! WhichTab(filename)
-    " Try to determine whether file is open in any tab.  
-    " Return number of tab it's open in
-    " http://stackoverflow.com/q/35465597/
-    let buffername = bufname(a:filename)
-    if buffername == ""
-        return 0
-    endif
-    let buffernumber = bufnr(buffername)
+function! ToggleVimrc()
+  let buffernumber = bufnr("~/.vimrc") " -1 if doesn't exist
+  let currenttab = tabpagenr() " store current buf as fallback
+  let buffs_arr = []
+  tabdo let buffs_arr += tabpagebuflist() " collect all buf#s
 
-    " tabdo will loop through pages and leave you on the last one;
-    " this is to make sure we don't leave the current page
-    let currenttab = tabpagenr()
-    let buffs_arr = []
-    tabdo let buffs_arr += tabpagebuflist()
+  " return to current page
+  exec "tabnext ".currenttab
 
-    " return to current page
-    exec "tabnext ".currenttab
+  let i = 0
+  let bnr = 0
+  for bnum in buffs_arr " iterate thru buf#s, look for match
+      let i += 1
+      if bnum == buffernumber
+        let bnr = i
+      endif
+  endfor
 
-    " Start checking tab numbers for matches
-    let i = 0
-    for bnum in buffs_arr
-        let i += 1
-        echo "bnum: ".bnum." buff: ".buffernumber." i: ".i
-        if bnum == buffernumber
-            return i
-        endif
-    endfor
-endfunction
-
-function! GetVimRC()
-  let bnr = WhichTab("~/.vimrc")
-  if bnr > 0
+  if bufnr("%") == buffernumber "if current buf, close
+    tabclose 
+  elseif bnr > 0 " if match, switchbuf
     sb ~/.vimrc
-  else
+  else           " else create buff
     $tabnew
     e $MYVIMRC
   endif
-  echo bnr
 endfunction
 
 "" {{{{ Plugin-specific settings }}}}
