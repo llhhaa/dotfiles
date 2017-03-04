@@ -190,7 +190,7 @@ noremap <Leader>r <C-r>
 noremap <Leader>w <C-w>
 noremap <Leader>x <C-x>
 noremap <Leader>F :FZF<Cr>
-noremap <Leader>v :call ToggleVimrc()<Cr>
+noremap gC :call ToggleVimrc()<Cr>
 noremap <Leader>= :call Whitespace()<Cr>
 noremap <Leader>/ :noh<Cr>
 noremap <Leader>p :cd %:p:h<Cr>
