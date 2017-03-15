@@ -2,7 +2,7 @@
 " TOC:
 
 " Plugins
-""" tpope
+""" feature extension
 """ syntax
 """ misc
 """ fzf
@@ -44,9 +44,11 @@ call vundle#begin()
 " call vundle#begin('~/some/path/here')
 Plugin 'gmarik/Vundle.vim' " let Vundle manage Vundle, required
 
-"tpope
+"feature extension
 Plugin 'tpope/vim-fugitive.git'
 Plugin 'tpope/vim-commentary'
+Plugin 'kana/vim-textobj-user'
+Plugin 'kana/vim-textobj-entire'
 
 "syntax & linting
 Plugin 'pangloss/vim-javascript'
@@ -62,6 +64,9 @@ Plugin 'wikitopian/hardmode'
 call vundle#end() "required
 filetype plugin indent on "required
 
+"my plugin :)
+"set rtp+=~/.vim/bundle/vim-rctoggle
+
 "fzf
 set rtp+=/usr/local/opt/fzf
 
@@ -75,7 +80,6 @@ set number      " show line numbers
 set relativenumber
 set wildmenu
 set wildignore +=**/node_modules/**
-set switchbuf=useopen,usetab
 filetype plugin indent on
 au FocusGained,BufEnter * checktime "like gVim, prompt if file changed
 
@@ -185,19 +189,25 @@ let g:syntastic_javascript_checkers = ['eslint']
 "" {{{{ Keymappings }}}}
 "moving pane manipulation over to space-w, easier to use on 40% keyboards
 map <Space> <leader>
-noremap <Leader>a <C-a>
+"noremap <Leader>a <C-a>
 noremap <Leader>r <C-r>
 noremap <Leader>w <C-w>
-noremap <Leader>x <C-x>
-noremap <Leader>F :FZF<Cr>
-noremap gC :call ToggleVimrc()<Cr>
+"noremap <Leader>x <C-x>
+noremap <Leader>F :tabnew +FZF<Cr>
+noremap <Leader>G :tabnew +grep\<space>
 noremap <Leader>= :call Whitespace()<Cr>
 noremap <Leader>/ :noh<Cr>
 noremap <Leader>p :cd %:p:h<Cr>
 noremap <Leader>h :cd ~/repos/<Cr>
+xnoremap <Leader>* :<C-u>call <SID>VSetSearch('/')<CR>/<C-R>=@/<CR><CR>
+xnoremap <Leader># :<C-u>call <SID>VSetSearch('?')<CR>?<C-R>=@/<CR><CR>
+noremap gC :call ToggleVimrc()<Cr>
 noremap gO :!open -a Adobe\ Photoshop\ CS5 <cfile><CR>
 
 function! ToggleVimrc()
+  let s:keep_sb = &switchbuf
+  set switchbuf=useopen,usetab
+
   let buffernumber = bufnr("~/.vimrc") " -1 if doesn't exist
   let currenttab = tabpagenr() " store current buf as fallback
   let buffs_arr = []
@@ -223,6 +233,20 @@ function! ToggleVimrc()
     $tabnew
     e $MYVIMRC
   endif
+
+  let &switchbuf=s:keep_sb
+  unlet s:keep_sb
+endfunction
+
+function! OpenBrackets()
+  "/}\|]/e
+endfunction
+
+function! s:VSetSearch(cmdtype)
+  let temp = @s
+  norm! gv"sy
+  let @/ = '\V' . substitute(escape(@s, a:cmdtype.'\'), '\n', '\\n', 'g')
+  let @s = temp
 endfunction
 
 "" {{{{ Plugin-specific settings }}}}
