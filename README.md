@@ -1,7 +1,7 @@
 # l-abel-dotfiles
 
-##vim
-####Highlights:
+## vim
+#### Highlights:
 
 Whitespace cleanup method, additionally preserves one line at the end of the file:
 
@@ -58,5 +58,5 @@ function! ToggleVimrc()
 endfunction
 ```
 
-##tmux
+## tmux
 nothing special yet
