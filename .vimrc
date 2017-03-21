@@ -34,6 +34,10 @@
 """ ruby
 """ fzf
 
+" Fonts
+""" Adobe Source Code Pro
+""" Fira Mono
+
 
 "" {{{{ Vundle }}}}
 filetype off " required for Vundle
@@ -189,20 +193,33 @@ let g:syntastic_javascript_checkers = ['eslint']
 "" {{{{ Keymappings }}}}
 "moving pane manipulation over to space-w, easier to use on 40% keyboards
 map <Space> <leader>
-"noremap <Leader>a <C-a>
 noremap <Leader>r <C-r>
 noremap <Leader>w <C-w>
-"noremap <Leader>x <C-x>
-noremap <Leader>F :tabnew +FZF<Cr>
-noremap <Leader>G :tabnew +grep\<space>
-noremap <Leader>= :call Whitespace()<Cr>
 noremap <Leader>/ :noh<Cr>
-noremap <Leader>p :cd %:p:h<Cr>
 noremap <Leader>h :cd ~/repos/<Cr>
+noremap <Leader>p :cd %:p:h<Cr>
+
+" Scripts
+noremap gC :call ToggleVimrc()<Cr>
+noremap <Leader>= :call Whitespace()<Cr>
+noremap <Leader>o :call OpenBrackets()<Cr>
 xnoremap <Leader>* :<C-u>call <SID>VSetSearch('/')<CR>/<C-R>=@/<CR><CR>
 xnoremap <Leader># :<C-u>call <SID>VSetSearch('?')<CR>?<C-R>=@/<CR><CR>
-noremap gC :call ToggleVimrc()<Cr>
+
+" External
+noremap <Leader>F :tabnew +FZF<Cr>
+noremap <Leader>G :tabnew +grep\<space>
 noremap gO :!open -a Adobe\ Photoshop\ CS5 <cfile><CR>
+
+" this should eliminate the delay in exiting insert mode
+if !has('gui_running')
+  set ttimeoutlen=100
+  augroup FastEscape
+    autocmd!
+    au InsertEnter * set timeoutlen=0
+    au InsertLeave * set timeoutlen=1000
+  augroup END
+endif
 
 function! ToggleVimrc()
   let s:keep_sb = &switchbuf
@@ -238,8 +255,12 @@ function! ToggleVimrc()
   unlet s:keep_sb
 endfunction
 
-function! OpenBrackets()
-  "/}\|]/e
+function! OpenBrackets() abort
+  " TODO: make the start of insert mode indented
+  " TODO: have it abort silently
+  .s/\v(\{|\[)/\1\r/
+  execute "normal! O"
+  startinsert
 endfunction
 
 function! s:VSetSearch(cmdtype)
