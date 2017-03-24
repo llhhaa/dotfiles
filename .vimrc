@@ -38,6 +38,11 @@
 """ Adobe Source Code Pro
 """ Fira Mono
 
+" Potential TODOs:
+" use prettier to format javascript with gq[motion]
+" [npm install -g prettier]
+" autocmd FileType javascript set formatprg=prettier\ --stdin
+
 
 "" {{{{ Vundle }}}}
 filetype off " required for Vundle
