@@ -169,6 +169,7 @@ set guitablabel=%{GuiTabLabel()}
 "" {{{{ colorschemes }}}}
 let g:neodark#use_256color = 1 " default: 0
 colorscheme neodark
+set t_Co=256
 
 
 "" {{{{ netrw }}}}
