@@ -62,6 +62,7 @@ Plugin 'kana/vim-textobj-entire'
 "syntax & linting
 Plugin 'pangloss/vim-javascript'
 Plugin 'mxw/vim-jsx'
+Plugin 'leafgarland/typescript-vim'
 Plugin 'scrooloose/syntastic'
 Plugin 'mtscout6/syntastic-local-eslint.vim' " use project eslint
 
