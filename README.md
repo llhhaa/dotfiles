@@ -1,4 +1,5 @@
 # l-abel-dotfiles
+not just dotfiles!
 
 ## vim
 #### Highlights:
