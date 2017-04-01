@@ -43,36 +43,26 @@
 " [npm install -g prettier]
 " autocmd FileType javascript set formatprg=prettier\ --stdin
 
-
-"" {{{{ Vundle }}}}
-filetype off " required for Vundle
-" set the runtime path to include Vundle and initialize
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
-" alternatively, pass a path where Vundle should install plugins
-" call vundle#begin('~/some/path/here')
-Plugin 'gmarik/Vundle.vim' " let Vundle manage Vundle, required
-
+"" {{{{ Vim-Plug }}}}
+call plug#begin('~/.vim/plugged')
 "feature extension
-Plugin 'tpope/vim-fugitive.git'
-Plugin 'tpope/vim-commentary'
-Plugin 'kana/vim-textobj-user'
-Plugin 'kana/vim-textobj-entire'
+Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-commentary'
+Plug 'kana/vim-textobj-user'
+Plug 'kana/vim-textobj-entire'
 
 "syntax & linting
-Plugin 'pangloss/vim-javascript'
-Plugin 'mxw/vim-jsx'
-Plugin 'leafgarland/typescript-vim'
-Plugin 'scrooloose/syntastic'
-Plugin 'mtscout6/syntastic-local-eslint.vim' " use project eslint
+Plug 'pangloss/vim-javascript'
+Plug 'mxw/vim-jsx'
+Plug 'leafgarland/typescript-vim'
+Plug 'scrooloose/syntastic'
+"Plug 'mtscout6/syntastic-local-eslint.vim' " use project eslint
+"Plug 'unblevable/quick-scope' " cool but distracting
 
 "misc
-Plugin 'wikitopian/hardmode'
-"Plugin 'scrooloose/nerdtree'
-
-" all Vundle plugins must be added before the following line
-call vundle#end() "required
-filetype plugin indent on "required
+Plug 'keitanakamura/neodark.vim'
+Plug 'wikitopian/hardmode'
+call plug#end()
 
 "my plugin :)
 "set rtp+=~/.vim/bundle/vim-rctoggle
@@ -82,39 +72,35 @@ set rtp+=/usr/local/opt/fzf
 
 
 "" {{{{ General Settings }}}}
-set nocompatible		" no compatibility with legacy vi, required for Vundle
+filetype plugin indent on
 syntax enable
 set encoding=utf-8
-set showcmd			" display incomplete commands
+set history=1000
+set nocompatible		" no compatibility with legacy vi, required for Vundle
 set number      " show line numbers
-set relativenumber
-set wildmenu
+set ruler
+set scrolloff=1 " keep one line displayed above/below cursor
+set sessionoptions-=options " don't keep options in sessions
+set showcmd			" display incomplete commands
+set sidescrolloff=5 " keep 5 cols to the left/right of cursor
+set tabpagemax=50
+set ttimeout
+set ttimeoutlen=100
+set viminfo^=! " keep capitalized global variables (for plugins)
 set wildignore +=**/node_modules/**
-filetype plugin indent on
+set wildmenu
+"set relativenumber
 au FocusGained,BufEnter * checktime "like gVim, prompt if file changed
 
 
 "" {{{{ Whitespace }}}}
+set autoindent " use indent from prev line when starting new line 
+set smarttab " use shiftwidth (value used in >> cmd) when tabbing
 set nowrap
 set tabstop=2 shiftwidth=2
-set expandtab			" use spaces, not tabs (optional)
+set expandtab	" use spaces, not tabs (optional)
 set backspace=indent,eol,start	" backspace through everything in insert mode
-
-" Whitespace cleanup
-function! Whitespace() " whitespace and endline cleanup function
-  if !&binary && &filetype != 'diff'
-    normal mz
-    normal Hmy
-    $put _
-    %s/\s\+$//e
-    %s#\($\n\s*\)\+\%$##
-    $put _
-    normal 'yz<CR>
-    normal `z
-    echo "Whitespace cleanup complete."
-  endif
-endfunction
-"" for regex breakdown: http://stackoverflow.com/q/7495932/
+set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
 
 
 "" {{{{ Folding }}}}
@@ -136,33 +122,8 @@ set statusline=%3.3n " buffer number
 set statusline+=\ %F " full file path
 set statusline+=\ %h%m%r%w " status flags
 set statusline+=\ %#warningmsg# " highlight switch
-set statusline+=\ %{SyntasticStatuslineFlag()}
+"set statusline+=\ %{SyntasticStatuslineFlag()}
 set statusline+=\ %* " highlight exit
-
-function! GuiTabLabel()
-  let label = ''
-  let bufnrlist = tabpagebuflist(v:lnum)
-
-  " Add '+' if one of the buffers in the tab page is modified
-  for bufnr in bufnrlist
-    if getbufvar(bufnr, "&modified")
-      let label = '+'
-      break
-    endif
-  endfor
-
-  " Append the number of windows in the tab page if more than one
-  let wincount = tabpagewinnr(v:lnum, '$')
-  if wincount > 1
-    let label .= wincount
-  endif
-  if label != ''
-    let label .= ' '
-  endif
-
-  " Append the buffer name
-  return label . bufname(bufnrlist[tabpagewinnr(v:lnum) - 1])
-endfunction
 set guitablabel=    " clear for reload
 set guitablabel=%{GuiTabLabel()}
 
@@ -175,9 +136,7 @@ set t_Co=256
 
 "" {{{{ netrw }}}}
 let g:netrw_banner = 0 " hide banner
-"let g:netrw_liststyle = 3 " tree list
-"if that doesn't resolve netrw issue, try this
-"autocmd FileType netrw setl bufhidden=wipe
+"let g:netrw_liststyle = 3 " tree list (causes buffer bug)
 
 
 "" {{{{ Linting }}}}
@@ -218,17 +177,49 @@ noremap <Leader>F :tabnew +FZF<Cr>
 noremap <Leader>G :tabnew +grep\<space>
 noremap gO :!open -a Adobe\ Photoshop\ CS5 <cfile><CR>
 
-" this should eliminate the delay in exiting insert mode
-if !has('gui_running')
-  set ttimeoutlen=100
-  augroup FastEscape
-    autocmd!
-    au InsertEnter * set timeoutlen=0
-    au InsertLeave * set timeoutlen=1000
-  augroup END
-endif
 
-function! ToggleVimrc()
+"" {{{{ Functions }}}}
+function! GuiTabLabel()
+  let label = ''
+  let bufnrlist = tabpagebuflist(v:lnum)
+
+  " Add '+' if one of the buffers in the tab page is modified
+  for bufnr in bufnrlist
+    if getbufvar(bufnr, "&modified")
+      let label = '+'
+      break
+    endif
+  endfor
+
+  " Append the number of windows in the tab page if more than one
+  let wincount = tabpagewinnr(v:lnum, '$')
+  if wincount > 1
+    let label .= wincount
+  endif
+  if label != ''
+    let label .= ' '
+  endif
+
+  " Append the buffer name
+  return label . bufname(bufnrlist[tabpagewinnr(v:lnum) - 1])
+endfunction
+
+function! Whitespace() " whitespace and endline cleanup function
+  if !&binary && &filetype != 'diff'
+    normal mz
+    normal Hmy
+    $put _
+    %s/\s\+$//e
+    %s#\($\n\s*\)\+\%$##
+    $put _
+    normal 'yz<CR>
+    normal `z
+    echo "Whitespace cleanup complete."
+  endif
+endfunction
+"" for regex breakdown: http://stackoverflow.com/q/7495932/
+
+function! ToggleVimrc() " switch to vimrc depending on context
   let s:keep_sb = &switchbuf
   set switchbuf=useopen,usetab
 
@@ -270,6 +261,7 @@ function! OpenBrackets() abort
   startinsert
 endfunction
 
+" Visual-Star
 function! s:VSetSearch(cmdtype)
   let temp = @s
   norm! gv"sy
@@ -278,19 +270,17 @@ function! s:VSetSearch(cmdtype)
 endfunction
 
 "" {{{{ Plugin-specific settings }}}}
-
-"" {{{{ ripgrep }}}}
+" {{{ ripgrep }}}
 "  use ripgrep instead of grep
 if executable('rg')
   set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case
   set grepformat=%f:%l:%c:%m,%f:%l:%m
 endif
 
-
-"" HardMode
+" {{{ HardMode }}}
 "autocmd VimEnter,BufNewFile,BufReadPost * silent! call HardMode() " call on start
 
 
 "" {{{{ Last Call }}}}
 set path+=** " use ** by default for filepath commands
-cd ~/repos " Change to repos directory
+"cd ~/repos " Change to repos directory
