@@ -68,8 +68,8 @@ call plug#end()
 "set rtp+=~/.vim/bundle/vim-rctoggle
 
 "fzf
-set rtp+=/usr/local/opt/fzf
-
+"set rtp+=/usr/local/opt/fzf " mac/homebrew
+set rtp+=~/.fzf " linux/git
 
 "" {{{{ General Settings }}}}
 filetype plugin indent on
@@ -94,7 +94,7 @@ au FocusGained,BufEnter * checktime "like gVim, prompt if file changed
 
 
 "" {{{{ Whitespace }}}}
-set autoindent " use indent from prev line when starting new line 
+set autoindent " use indent from prev line when starting new line
 set smarttab " use shiftwidth (value used in >> cmd) when tabbing
 set nowrap
 set tabstop=2 shiftwidth=2
@@ -241,7 +241,7 @@ function! ToggleVimrc() " switch to vimrc depending on context
   endfor
 
   if bufnr("%") == buffernumber "if current buf, close
-    tabclose 
+    tabclose
   elseif bnr > 0 " if match, switchbuf
     sb ~/.vimrc
   else           " else create buff
