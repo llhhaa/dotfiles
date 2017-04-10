@@ -60,4 +60,4 @@ endfunction
 ```
 
 ## tmux
-nothing special yet
+A basic setup inspired by Brian P. Hogan's *tmux 2*.
