@@ -55,7 +55,7 @@ Plug 'kana/vim-textobj-entire'
 Plug 'pangloss/vim-javascript'
 Plug 'mxw/vim-jsx'
 Plug 'leafgarland/typescript-vim'
-Plug 'scrooloose/syntastic'
+"Plug 'scrooloose/syntastic'
 "Plug 'mtscout6/syntastic-local-eslint.vim' " use project eslint
 "Plug 'unblevable/quick-scope' " cool but distracting
 
@@ -68,8 +68,8 @@ call plug#end()
 "set rtp+=~/.vim/bundle/vim-rctoggle
 
 "fzf
-"set rtp+=/usr/local/opt/fzf " mac/homebrew
-set rtp+=~/.fzf " linux/git
+" "set rtp+=/usr/local/opt/fzf " mac/homebrew
+"set rtp+=~/.fzf " linux/git
 
 "" {{{{ General Settings }}}}
 filetype plugin indent on
@@ -129,7 +129,7 @@ set guitablabel=%{GuiTabLabel()}
 
 
 "" {{{{ colorschemes }}}}
-let g:neodark#use_256color = 1 " default: 0
+"let g:neodark#use_256color = 1 " default: 0
 colorscheme neodark
 set t_Co=256
 
@@ -175,7 +175,7 @@ xnoremap <Leader># :<C-u>call <SID>VSetSearch('?')<CR>?<C-R>=@/<CR><CR>
 " External
 noremap <Leader>F :tabnew +FZF<Cr>
 noremap <Leader>G :tabnew +grep\<space>
-noremap gO :!open -a Adobe\ Photoshop\ CS5 <cfile><CR>
+"noremap gO :!open -a Adobe\ Photoshop\ CS5 <cfile><CR>
 
 
 "" {{{{ Functions }}}}
@@ -271,9 +271,12 @@ endfunction
 
 "" {{{{ Plugin-specific settings }}}}
 " {{{ ripgrep }}}
-"  use ripgrep instead of grep
+"  use ripgrep (or silver searcher) instead of grep
 if executable('rg')
   set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case
+  set grepformat=%f:%l:%c:%m,%f:%l:%m
+elseif executable('ag')
+  set grepprg=ag\ --vimgrep\ --ignore=\"**.min.js\"
   set grepformat=%f:%l:%c:%m,%f:%l:%m
 endif
 
