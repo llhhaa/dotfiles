@@ -44,7 +44,8 @@
 " autocmd FileType javascript set formatprg=prettier\ --stdin
 
 "" {{{{ Vim-Plug }}}}
-call plug#begin('~/.vim/plugged')
+"location of Vim-Plug is ~\AppData\Local\nvim\autoload (see vim-plug repo)
+call plug#begin()
 "feature extension
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-commentary'
@@ -68,7 +69,7 @@ call plug#end()
 "set rtp+=~/.vim/bundle/vim-rctoggle
 
 "fzf
-" "set rtp+=/usr/local/opt/fzf " mac/homebrew
+"set rtp+=/usr/local/opt/fzf " mac/homebrew
 "set rtp+=~/.fzf " linux/git
 
 "" {{{{ General Settings }}}}
@@ -129,7 +130,7 @@ set guitablabel=%{GuiTabLabel()}
 
 
 "" {{{{ colorschemes }}}}
-"let g:neodark#use_256color = 1 " default: 0
+let g:neodark#use_256color = 1 " default: 0
 colorscheme neodark
 set t_Co=256
 
@@ -173,7 +174,7 @@ xnoremap <Leader>* :<C-u>call <SID>VSetSearch('/')<CR>/<C-R>=@/<CR><CR>
 xnoremap <Leader># :<C-u>call <SID>VSetSearch('?')<CR>?<C-R>=@/<CR><CR>
 
 " External
-noremap <Leader>F :tabnew +FZF<Cr>
+" noremap <Leader>F :tabnew +FZF<Cr>
 noremap <Leader>G :tabnew +grep\<space>
 "noremap gO :!open -a Adobe\ Photoshop\ CS5 <cfile><CR>
 
