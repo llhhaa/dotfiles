@@ -61,3 +61,10 @@ endfunction
 
 ## tmux
 A basic setup inspired by Brian P. Hogan's *tmux 2*.
+
+## Shell Scripts
+### goodmorning.sh
+Creates two tmux sessions - `goodmorning`, for running Eclipse and Caffeinate, and `workspace`, a centralized window for accessing various project directories and tools.
+
+### goodnight.sh
+The counterparty to `goodmorning.sh`, closes the two tmux sessions created by the script.
