@@ -91,6 +91,9 @@ set wildignore +=**/node_modules/**
 set wildmenu
 "set relativenumber
 au FocusGained,BufEnter * checktime "like gVim, prompt if file changed
+if v:version > 703 || v:version == 703 && has('patch541')
+  set formatoptions+=j " smart line joining in comments
+endif
 
 
 "" {{{{ Whitespace }}}}
