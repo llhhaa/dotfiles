@@ -55,9 +55,17 @@ Plug 'kana/vim-textobj-entire'
 Plug 'pangloss/vim-javascript'
 Plug 'mxw/vim-jsx'
 Plug 'leafgarland/typescript-vim'
+Plug 'vim-scripts/groovy.vim'
 "Plug 'scrooloose/syntastic'
 "Plug 'mtscout6/syntastic-local-eslint.vim' " use project eslint
 "Plug 'unblevable/quick-scope' " cool but distracting
+
+" Groovy syntax highlighting
+autocmd BufRead,BufNewFile Jenkinsfile setf groovy
+autocmd BufRead,BufNewFile Jenkinsfile* setf groovy
+autocmd BufRead,BufNewFile *.jenkinsfile setf groovy
+autocmd BufRead,BufNewFile *.jenkinsfile setf groovy
+autocmd BufRead,BufNewFile *.gradle setf groovy
 
 "misc
 Plug 'keitanakamura/neodark.vim'
@@ -125,7 +133,8 @@ set smartcase			" ... unless they contain at least one capital letter
 set laststatus=2  " always display statusline
 set statusline=   " clear out for reload
 set statusline=%3.3n " buffer number
-set statusline+=\ %F " full file path
+set statusline+=\ %F%M " full file path + modified flag
+set statusline+=\ %L/%l:%c " linetotal/line:col
 set statusline+=\ %h%m%r%w " status flags
 set statusline+=\ %#warningmsg# " highlight switch
 "set statusline+=\ %{SyntasticStatuslineFlag()}
