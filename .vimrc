@@ -63,6 +63,7 @@ Plug 'pangloss/vim-javascript'
 Plug 'mxw/vim-jsx'
 Plug 'leafgarland/typescript-vim'
 Plug 'vim-scripts/groovy.vim'
+Plug 'tpope/vim-rails'
 "Plug 'scrooloose/syntastic'
 "Plug 'mtscout6/syntastic-local-eslint.vim' " use project eslint
 "Plug 'unblevable/quick-scope' " cool but distracting
@@ -83,7 +84,7 @@ call plug#end()
 "set rtp+=~/.vim/bundle/vim-rctoggle
 
 "fzf
-" "set rtp+=/usr/local/opt/fzf " mac/homebrew
+set rtp+=/usr/local/opt/fzf " mac/homebrew
 "set rtp+=~/.fzf " linux/git
 
 "" {{{{ General Settings }}}}
@@ -94,7 +95,7 @@ set history=1000
 set nocompatible		" no compatibility with legacy vi, required for Vundle
 set number      " show line numbers
 set ruler
-set scrolloff=1 " keep one line displayed above/below cursor
+set scrolloff=2 " keep one line displayed above/below cursor
 set sessionoptions-=options " don't keep options in sessions
 set showcmd			" display incomplete commands
 set sidescrolloff=5 " keep 5 cols to the left/right of cursor
@@ -106,6 +107,10 @@ set wildignore +=**/node_modules/**
 set wildmenu
 "set relativenumber
 au FocusGained,BufEnter * checktime "like gVim, prompt if file changed
+
+" needed so vim gets the mouse in tmux
+set ttymouse=xterm2
+set mouse=a
 
 if v:version > 703 || v:version == 703 && has('patch541')
   set formatoptions+=j " smart line joining in comments
