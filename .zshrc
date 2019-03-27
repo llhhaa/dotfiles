@@ -1,7 +1,7 @@
 # OhMyZsh configuation
 
 # Path to your oh-my-zsh installation.
-export ZSH=/Users/lhabel/.oh-my-zsh
+export ZSH="/Users/lukeabel/.oh-my-zsh"
 
 ZSH_THEME="af-magic"
 HIST_STAMPS="dd.mm.yyyy"
