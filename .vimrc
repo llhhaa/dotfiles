@@ -55,8 +55,11 @@ call plug#begin('~/.vim/plugged')
 "feature extension
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-surround'
 Plug 'kana/vim-textobj-user'
 Plug 'kana/vim-textobj-entire'
+Plug 'janko-m/vim-test'
+Plug 'vimwiki/vimwiki'
 
 "syntax & linting
 Plug 'pangloss/vim-javascript'
@@ -115,8 +118,10 @@ set mouse=a
 if v:version > 703 || v:version == 703 && has('patch541')
   set formatoptions+=j " smart line joining in comments
 endif
-match ErrorMsg '\%>120v.\+' " mark lines of coder longer than 120
-match ErrorMsg '\s\+$' " mark lines of code with trailing whitespace
+
+" long line highlighting
+highlight ColorColumn ctermbg=gray
+set colorcolumn=81
 
 
 "" {{{{ Whitespace }}}}
@@ -191,6 +196,7 @@ noremap <Leader>w <C-w>
 noremap <Leader>/ :noh<Cr>
 noremap <Leader>h :cd ~/repos/<Cr>
 noremap <Leader>p :cd %:p:h<Cr>
+noremap <Leader>e 81\|
 
 " Scripts
 noremap gC :call ToggleVimrc()<Cr>
@@ -202,7 +208,15 @@ xnoremap <Leader># :<C-u>call <SID>VSetSearch('?')<CR>?<C-R>=@/<CR><CR>
 " External
 noremap <Leader>F :tabnew +FZF<Cr>
 noremap <Leader>G :tabnew +grep\<space>
+noremap <Leader>L :tabnew +grep\<space><C-r><C-w><Cr> :copen<Cr>
 "noremap gO :!open -a Adobe\ Photoshop\ CS5 <cfile><CR>
+
+" Vim-Test
+noremap <Leader>tt :TestNearest<Cr>
+noremap <Leader>tf :TestFile<Cr>
+noremap <Leader>ts :TestSuite<Cr>
+noremap <Leader>tl :TestLast<Cr>
+noremap <Leader>tv :TestVist<Cr>
 
 
 "" {{{{ Functions }}}}
