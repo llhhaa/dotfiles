@@ -55,6 +55,7 @@ call plug#begin('~/.vim/plugged')
 "feature extension
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-rhubarb'
 Plug 'tpope/vim-surround'
 Plug 'kana/vim-textobj-user'
 Plug 'kana/vim-textobj-entire'
@@ -65,22 +66,24 @@ Plug 'vimwiki/vimwiki'
 Plug 'pangloss/vim-javascript'
 Plug 'mxw/vim-jsx'
 Plug 'leafgarland/typescript-vim'
-Plug 'vim-scripts/groovy.vim'
+Plug 'kchmck/vim-coffee-script'
+" Plug 'vim-scripts/groovy.vim'
 Plug 'tpope/vim-rails'
 "Plug 'scrooloose/syntastic'
 "Plug 'mtscout6/syntastic-local-eslint.vim' " use project eslint
 "Plug 'unblevable/quick-scope' " cool but distracting
 
 " Groovy syntax highlighting
-autocmd BufRead,BufNewFile Jenkinsfile setf groovy
-autocmd BufRead,BufNewFile Jenkinsfile* setf groovy
-autocmd BufRead,BufNewFile *.jenkinsfile setf groovy
-autocmd BufRead,BufNewFile *.jenkinsfile setf groovy
-autocmd BufRead,BufNewFile *.gradle setf groovy
+" autocmd BufRead,BufNewFile Jenkinsfile setf groovy
+" autocmd BufRead,BufNewFile Jenkinsfile* setf groovy
+" autocmd BufRead,BufNewFile *.jenkinsfile setf groovy
+" autocmd BufRead,BufNewFile *.jenkinsfile setf groovy
+" autocmd BufRead,BufNewFile *.gradle setf groovy
 
 "misc
-Plug 'keitanakamura/neodark.vim'
-Plug 'wikitopian/hardmode'
+" Plug 'keitanakamura/neodark.vim'
+Plug 'lifepillar/vim-solarized8'
+" Plug 'wikitopian/hardmode'
 call plug#end()
 
 "my plugin :)
@@ -162,8 +165,10 @@ set guitablabel=%{GuiTabLabel()}
 
 "" {{{{ colorschemes }}}}
 "let g:neodark#use_256color = 1 " default: 0
-colorscheme neodark
-set t_Co=256
+set background=dark
+set termguicolors " for solarized
+" set t_Co=256 " for Terminal.app
+colorscheme solarized8
 
 
 "" {{{{ netrw }}}}
@@ -188,15 +193,24 @@ let g:syntastic_check_on_wq = 0
 let g:syntastic_javascript_checkers = ['eslint']
 
 
+"" {{{{ Commands }}}}
+" cnoreabbrev fzf FZF
+
+
 "" {{{{ Keymappings }}}}
 "moving pane manipulation over to space-w, easier to use on 40% keyboards
 map <Space> <leader>
-noremap <Leader>r <C-r>
+noremap <Leader>r :s/:\(\w\+\)\(\s*\)=>\s*/\1:\2/g<Cr>
 noremap <Leader>w <C-w>
 noremap <Leader>/ :noh<Cr>
 noremap <Leader>h :cd ~/repos/<Cr>
 noremap <Leader>p :cd %:p:h<Cr>
 noremap <Leader>e 81\|
+
+" Vim Terminal
+" tnoremap <Esc> <C-W>N
+" tnoremap <C-W><Esc> <Esc>
+" set notimeout ttimeout timeoutlen=100
 
 " Scripts
 noremap gC :call ToggleVimrc()<Cr>
@@ -206,8 +220,13 @@ xnoremap <Leader>* :<C-u>call <SID>VSetSearch('/')<CR>/<C-R>=@/<CR><CR>
 xnoremap <Leader># :<C-u>call <SID>VSetSearch('?')<CR>?<C-R>=@/<CR><CR>
 
 " External
+noremap <Leader>f :FZF<Cr>
 noremap <Leader>F :tabnew +FZF<Cr>
+
+noremap <Leader>g :grep\<space>
 noremap <Leader>G :tabnew +grep\<space>
+
+noremap <Leader>l :vsp +grep\<space><C-r><C-w><Cr> :copen<Cr>
 noremap <Leader>L :tabnew +grep\<space><C-r><C-w><Cr> :copen<Cr>
 "noremap gO :!open -a Adobe\ Photoshop\ CS5 <cfile><CR>
 
@@ -309,6 +328,7 @@ function! s:VSetSearch(cmdtype)
   let @/ = '\V' . substitute(escape(@s, a:cmdtype.'\'), '\n', '\\n', 'g')
   let @s = temp
 endfunction
+
 
 "" {{{{ Plugin-specific settings }}}}
 " {{{ ripgrep }}}
