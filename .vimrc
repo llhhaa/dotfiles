@@ -73,6 +73,15 @@ Plug 'tpope/vim-rails'
 "Plug 'mtscout6/syntastic-local-eslint.vim' " use project eslint
 "Plug 'unblevable/quick-scope' " cool but distracting
 
+" Colorschemes
+" Plug 'keitanakamura/neodark.vim'
+" Plug 'lifepillar/vim-solarized8'
+" Plug 'morhetz/gruvbox' " warm & retro
+" Plug 'owickstrom/vim-colors-paramount' " minimal syntax highlighting
+Plug 'romainl/apprentice'
+" Plug 'arcticicestudio/nord-vim'
+Plug 'chriskempson/base16-vim'
+
 " Groovy syntax highlighting
 " autocmd BufRead,BufNewFile Jenkinsfile setf groovy
 " autocmd BufRead,BufNewFile Jenkinsfile* setf groovy
@@ -81,8 +90,6 @@ Plug 'tpope/vim-rails'
 " autocmd BufRead,BufNewFile *.gradle setf groovy
 
 "misc
-" Plug 'keitanakamura/neodark.vim'
-Plug 'lifepillar/vim-solarized8'
 " Plug 'wikitopian/hardmode'
 call plug#end()
 
@@ -98,17 +105,17 @@ filetype plugin indent on
 syntax enable
 set encoding=utf-8
 set history=1000
-set nocompatible		" no compatibility with legacy vi, required for Vundle
-set number      " show line numbers
+set nocompatible            " no compatibility with legacy vi, required for Vundle
+set number                  " show line numbers
 set ruler
-set scrolloff=2 " keep one line displayed above/below cursor
+set scrolloff=2             " lines displayed above/below cursor
 set sessionoptions-=options " don't keep options in sessions
-set showcmd			" display incomplete commands
-set sidescrolloff=5 " keep 5 cols to the left/right of cursor
+set showcmd		    " display incomplete commands
+set sidescrolloff=5         " keep 5 cols to the left/right of cursor
 set tabpagemax=50
 set ttimeout
 set ttimeoutlen=100
-set viminfo^=! " keep capitalized global variables (for plugins)
+set viminfo^=!              " keep capitalized global variables (for plugins)
 set wildignore +=**/node_modules/**
 set wildmenu
 "set relativenumber
@@ -128,11 +135,13 @@ set colorcolumn=81
 
 
 "" {{{{ Whitespace }}}}
-set autoindent " use indent from prev line when starting new line
-set smarttab " use shiftwidth (value used in >> cmd) when tabbing
+set autoindent                  " use indent from prev line when starting new line
 set nowrap
-set tabstop=2 shiftwidth=2
-set expandtab	" use spaces, not tabs (optional)
+set tabstop=8                   " recommended default, use below settings for 'actual' tabsize
+set softtabstop=2
+set shiftwidth=2
+set smarttab                    " use shiftwidth (value used in >> cmd) when tabbing
+set expandtab	                " use spaces, not tabs (optional)
 set backspace=indent,eol,start	" backspace through everything in insert mode
 set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
 
@@ -143,37 +152,37 @@ set foldcolumn=0
 
 
 "" {{{{ Searching }}}}
-set hlsearch			" highlight matches
-set incsearch			" incremental searching
-set ignorecase		" searches are case insensitive...
-set smartcase			" ... unless they contain at least one capital letter
+set hlsearch    " highlight matches
+set incsearch	" incremental searching
+set ignorecase  " searches are case insensitive...
+set smartcase	" ... unless they contain at least one capital letter
 
 
 "" {{{{ statusline, tabline }}}}
-set laststatus=2  " always display statusline
-set statusline=   " clear out for reload
-set statusline=%3.3n " buffer number
-set statusline+=\ %F%M " full file path + modified flag
-set statusline+=\ %L/%l:%c " linetotal/line:col
-set statusline+=\ %h%m%r%w " status flags
+set laststatus=2                " always display statusline
+set statusline=                 " clear out for reload
+set statusline=%3.3n            " buffer number
+set statusline+=\ %F%M          " full file path + modified flag
+set statusline+=\ %L/%l:%c      " linetotal/line:col
+set statusline+=\ %h%m%r%w      " status flags
 set statusline+=\ %#warningmsg# " highlight switch
 "set statusline+=\ %{SyntasticStatuslineFlag()}
-set statusline+=\ %* " highlight exit
-set guitablabel=    " clear for reload
+set statusline+=\ %*            " highlight exit
+set guitablabel=                " clear for reload
 set guitablabel=%{GuiTabLabel()}
 
 
 "" {{{{ colorschemes }}}}
 "let g:neodark#use_256color = 1 " default: 0
+" set termguicolors             " for solarized
+" set t_Co=256                  " for Terminal.app for certain colorschemes
 set background=dark
-set termguicolors " for solarized
-" set t_Co=256 " for Terminal.app
-colorscheme solarized8
+colorscheme apprentice
 
 
 "" {{{{ netrw }}}}
-let g:netrw_banner = 0 " hide banner
-"let g:netrw_liststyle = 3 " tree list (causes buffer bug)
+let g:netrw_banner = 0      " hide banner
+"let g:netrw_liststyle = 3  " tree list (causes buffer bug)
 
 
 "" {{{{ Linting }}}}
