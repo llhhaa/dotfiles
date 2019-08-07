@@ -62,25 +62,26 @@ Plug 'kana/vim-textobj-entire'
 Plug 'janko-m/vim-test'
 Plug 'vimwiki/vimwiki'
 
+
 "syntax & linting
-Plug 'pangloss/vim-javascript'
-Plug 'mxw/vim-jsx'
-Plug 'leafgarland/typescript-vim'
-Plug 'kchmck/vim-coffee-script'
-" Plug 'vim-scripts/groovy.vim'
-Plug 'tpope/vim-rails'
+Plug 'sheerun/vim-polyglot'
+Plug 'w0rp/ale'
 "Plug 'scrooloose/syntastic'
 "Plug 'mtscout6/syntastic-local-eslint.vim' " use project eslint
-"Plug 'unblevable/quick-scope' " cool but distracting
+
+" languages
+Plug 'tpope/vim-rails'
+Plug 'tpope/vim-bundler'
+Plug 'tpope/vim-apathy'
 
 " Colorschemes
 " Plug 'keitanakamura/neodark.vim'
 " Plug 'lifepillar/vim-solarized8'
-" Plug 'morhetz/gruvbox' " warm & retro
-" Plug 'owickstrom/vim-colors-paramount' " minimal syntax highlighting
-Plug 'romainl/apprentice'
+" Plug 'morhetz/gruvbox'
+" Plug 'owickstrom/vim-colors-paramount'
 " Plug 'arcticicestudio/nord-vim'
-Plug 'chriskempson/base16-vim'
+" Plug 'chriskempson/base16-vim'
+Plug 'romainl/apprentice'
 
 " Groovy syntax highlighting
 " autocmd BufRead,BufNewFile Jenkinsfile setf groovy
@@ -89,8 +90,6 @@ Plug 'chriskempson/base16-vim'
 " autocmd BufRead,BufNewFile *.jenkinsfile setf groovy
 " autocmd BufRead,BufNewFile *.gradle setf groovy
 
-"misc
-" Plug 'wikitopian/hardmode'
 call plug#end()
 
 "my plugin :)
@@ -187,19 +186,26 @@ let g:netrw_banner = 0      " hide banner
 
 "" {{{{ Linting }}}}
 " (manual invoke w/:SyntasticCheck)
-let g:syntastic_mode_map = { 'mode': 'active',
-                            \ 'active_filetypes': ['javascript'],
-                            \ 'passive_filetypes': [] }
+" let g:syntastic_mode_map = { 'mode': 'active',
+"                             \ 'active_filetypes': ['javascript'],
+"                             \ 'passive_filetypes': [] }
 let g:jsx_ext_required = 0
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 0
-let g:syntastic_check_on_open = 0
-let g:syntastic_check_on_wq = 0
+" let g:syntastic_always_populate_loc_list = 1
+" let g:syntastic_auto_loc_list = 0
+" let g:syntastic_check_on_open = 0
+" let g:syntastic_check_on_wq = 0
 " attempted fix for nvm/vim/eslint path issue
 " currently resolved with 'local eslint plugin'
 " may need to revisit depending on project
 " let g:syntastic_javascript_eslint_exec = '~/.nvm/versions/node/v4.2.1/bin/eslint'
-let g:syntastic_javascript_checkers = ['eslint']
+" let g:syntastic_javascript_checkers = ['eslint']
+
+let g:ale_linters = {'javascript': ['eslint']}
+
+" Ruby/Rails settings
+autocmd FileType ruby,eruby let g:rubycomplete_buffer_loading = 1 
+autocmd FileType ruby,eruby let g:rubycomplete_classes_in_global = 1
+autocmd FileType ruby,eruby let g:rubycomplete_rails = 1
 
 
 "" {{{{ Commands }}}}
@@ -207,14 +213,14 @@ let g:syntastic_javascript_checkers = ['eslint']
 
 
 "" {{{{ Keymappings }}}}
-"moving pane manipulation over to space-w, easier to use on 40% keyboards
 map <Space> <leader>
-noremap <Leader>r :s/:\(\w\+\)\(\s*\)=>\s*/\1:\2/g<Cr>
-noremap <Leader>w <C-w>
 noremap <Leader>/ :noh<Cr>
+noremap <Leader>e :e **/*
 noremap <Leader>h :cd ~/repos/<Cr>
 noremap <Leader>p :cd %:p:h<Cr>
-noremap <Leader>e 81\|
+noremap <Leader>r :s/:\(\w\+\)\(\s*\)=>\s*/\1:\2/g<Cr>
+"moving pane manipulation over to space-w, easier to use on 40% keyboards
+noremap <Leader>w <C-w>
 
 " Vim Terminal
 " tnoremap <Esc> <C-W>N
@@ -235,7 +241,7 @@ noremap <Leader>F :tabnew +FZF<Cr>
 noremap <Leader>g :grep\<space>
 noremap <Leader>G :tabnew +grep\<space>
 
-noremap <Leader>l :vsp +grep\<space><C-r><C-w><Cr> :copen<Cr>
+noremap <Leader>l :grep\<space><C-r><C-w><Cr> :copen<Cr>
 noremap <Leader>L :tabnew +grep\<space><C-r><C-w><Cr> :copen<Cr>
 "noremap gO :!open -a Adobe\ Photoshop\ CS5 <cfile><CR>
 
@@ -350,10 +356,5 @@ elseif executable('ag')
   set grepformat=%f:%l:%c:%m,%f:%l:%m
 endif
 
-" {{{ HardMode }}}
-"autocmd VimEnter,BufNewFile,BufReadPost * silent! call HardMode() " call on start
-
-
 "" {{{{ Last Call }}}}
-set path+=** " use ** by default for filepath commands
-"cd ~/repos " Change to repos directory
+" set path+=**
