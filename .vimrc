@@ -1,4 +1,4 @@
-"" {{{{ Intro }}}}
+" {{{{ Intro }}}}
 " TOC:
 
 " Plugins
@@ -63,16 +63,17 @@ Plug 'janko-m/vim-test'
 Plug 'vimwiki/vimwiki'
 
 
-"syntax & linting
+" languages
 Plug 'sheerun/vim-polyglot'
+Plug 'tpope/vim-rails'
+Plug 'tpope/vim-bundler'
+Plug 'tpope/vim-apathy'
+
+" linting
 Plug 'w0rp/ale'
 "Plug 'scrooloose/syntastic'
 "Plug 'mtscout6/syntastic-local-eslint.vim' " use project eslint
 
-" languages
-Plug 'tpope/vim-rails'
-Plug 'tpope/vim-bundler'
-Plug 'tpope/vim-apathy'
 
 " Colorschemes
 " Plug 'keitanakamura/neodark.vim'
