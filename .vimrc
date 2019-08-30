@@ -1,46 +1,46 @@
-" {{{{ Intro }}}}
-" TOC:
+" " {{{{ Intro }}}}
+" " TOC:
 
-" Plugins
-""" feature extension
-""" syntax
-""" misc
-""" fzf
+" " Plugins
+" """ feature extension
+" """ syntax
+" """ misc
+" """ fzf
 
-" Core Vim
-""" general
-""" whitespace
-""" folding
-""" searching
-""" statusline
-""" tabline
+" " Core Vim
+" """ general
+" """ whitespace
+" """ folding
+" """ searching
+" """ statusline
+" """ tabline
 
-" Colorscheme (256 neodark)
+" " Colorscheme (256 neodark)
 
-" Netrw
+" " Netrw
 
-" Linter Settings
+" " Linter Settings
 
-" Keymappings
+" " Keymappings
 
-" Replace grep with ripgrep
+" " Replace grep with ripgrep
 
-" Last call (path+=**, cd to project)
+" " Last call (path+=**, cd to project)
 
-" Homebrew packages (not necessarily deps for Vim):
-""" ripgrep
-""" task
-""" ctags
-""" ruby
-""" fzf
+" " Homebrew packages (not necessarily deps for Vim):
+" """ ripgrep
+" """ task
+" """ ctags
+" """ ruby
+" """ fzf
 
-" Fonts
-""" Adobe Source Code Pro
-""" Fira Mono
+" " Fonts
+" """ Adobe Source Code Pro
+" """ Fira Mono
 
-" Potential TODOs:
-" use prettier to format javascript with gq[motion]
-" [npm install -g prettier]
+" " Potential TODOs:
+" " use prettier to format javascript with gq[motion]
+" " [npm install -g prettier]
 " autocmd FileType javascript set formatprg=prettier\ --stdin
 
 "" {{{{ Vim-Plug }}}}
@@ -61,18 +61,20 @@ Plug 'kana/vim-textobj-user'
 Plug 'kana/vim-textobj-entire'
 Plug 'janko-m/vim-test'
 Plug 'vimwiki/vimwiki'
-
+Plug '/usr/local/opt/fzf'
+Plug 'junegunn/fzf.vim'
 
 " languages
 Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-rails'
+Plug 'tpope/vim-rake'
 Plug 'tpope/vim-bundler'
 Plug 'tpope/vim-apathy'
 
 " linting
-Plug 'w0rp/ale'
-"Plug 'scrooloose/syntastic'
-"Plug 'mtscout6/syntastic-local-eslint.vim' " use project eslint
+" Plug 'w0rp/ale'
+" Plug 'scrooloose/syntastic'
+" Plug 'mtscout6/syntastic-local-eslint.vim' " use project eslint
 
 
 " Colorschemes
@@ -83,6 +85,7 @@ Plug 'w0rp/ale'
 " Plug 'arcticicestudio/nord-vim'
 " Plug 'chriskempson/base16-vim'
 Plug 'romainl/apprentice'
+Plug 'dylanaraps/wal'
 
 " Groovy syntax highlighting
 " autocmd BufRead,BufNewFile Jenkinsfile setf groovy
@@ -97,7 +100,7 @@ call plug#end()
 "set rtp+=~/.vim/bundle/vim-rctoggle
 
 "fzf
-set rtp+=/usr/local/opt/fzf " mac/homebrew
+" set rtp+=/usr/local/opt/fzf " mac/homebrew
 "set rtp+=~/.fzf " linux/git
 
 "" {{{{ General Settings }}}}
@@ -210,18 +213,18 @@ autocmd FileType ruby,eruby let g:rubycomplete_rails = 1
 
 
 "" {{{{ Commands }}}}
-" cnoreabbrev fzf FZF
+let g:ctrlp_user_command = 'rg %s --files'
 
 
 "" {{{{ Keymappings }}}}
 map <Space> <leader>
-noremap <Leader>/ :noh<Cr>
+"moving pane manipulation over to space-w, easier to use on 40% keyboards
+noremap <Leader>w <C-w>
+
 noremap <Leader>e :e **/*
 noremap <Leader>h :cd ~/repos/<Cr>
 noremap <Leader>p :cd %:p:h<Cr>
 noremap <Leader>r :s/:\(\w\+\)\(\s*\)=>\s*/\1:\2/g<Cr>
-"moving pane manipulation over to space-w, easier to use on 40% keyboards
-noremap <Leader>w <C-w>
 
 " Vim Terminal
 " tnoremap <Esc> <C-W>N
@@ -236,14 +239,24 @@ xnoremap <Leader>* :<C-u>call <SID>VSetSearch('/')<CR>/<C-R>=@/<CR><CR>
 xnoremap <Leader># :<C-u>call <SID>VSetSearch('?')<CR>?<C-R>=@/<CR><CR>
 
 " External
-noremap <Leader>f :FZF<Cr>
-noremap <Leader>F :tabnew +FZF<Cr>
+"" FZF
+noremap <Leader>f :GFiles<Cr>
+noremap <Leader>F :Files<Cr>
+noremap <Leader>b :Buffers<CR>
+noremap <Leader>h :History<CR>
+noremap <Leader>/ :Rg<CR>
+" noremap <Leader>l :BLines<CR>
+" noremap <Leader>L :Lines<CR>
+" noremap <Leader>' :Marks<CR>
 
 noremap <Leader>g :grep\<space>
 noremap <Leader>G :tabnew +grep\<space>
 
-noremap <Leader>l :grep\<space><C-r><C-w><Cr> :copen<Cr>
-noremap <Leader>L :tabnew +grep\<space><C-r><C-w><Cr> :copen<Cr>
+" grep  word under cursor
+noremap <Leader>l :grep<space><C-r><C-w><Cr> :copen<Cr>
+noremap <Leader>L :tabnew +grep<space><C-r><C-w><Cr> :copen<Cr>
+
+" open file
 "noremap gO :!open -a Adobe\ Photoshop\ CS5 <cfile><CR>
 
 " Vim-Test
@@ -350,7 +363,7 @@ endfunction
 " {{{ ripgrep }}}
 "  use ripgrep (or silver searcher) instead of grep
 if executable('rg')
-  set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case
+  set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case\ --ignore-file\ ~/.rgignore
   set grepformat=%f:%l:%c:%m,%f:%l:%m
 elseif executable('ag')
   set grepprg=ag\ --vimgrep\ --ignore=\"**.min.js\"
@@ -358,4 +371,5 @@ elseif executable('ag')
 endif
 
 "" {{{{ Last Call }}}}
-" set path+=**
+set path+=**
+set suffixesadd=.html.erb
