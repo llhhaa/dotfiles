@@ -59,10 +59,11 @@ Plug 'tpope/vim-rhubarb'
 Plug 'tpope/vim-surround'
 Plug 'kana/vim-textobj-user'
 Plug 'kana/vim-textobj-entire'
-Plug 'janko-m/vim-test'
-Plug 'vimwiki/vimwiki'
+Plug 'coderifous/textobj-word-column.vim'
 Plug '/usr/local/opt/fzf'
 Plug 'junegunn/fzf.vim'
+" Plug 'janko-m/vim-test'
+" Plug 'vimwiki/vimwiki'
 
 " languages
 Plug 'sheerun/vim-polyglot'
@@ -71,21 +72,27 @@ Plug 'tpope/vim-rake'
 Plug 'tpope/vim-bundler'
 Plug 'tpope/vim-apathy'
 
+" scheme!
+Plug 'guns/vim-sexp' " for selecting forms.
+Plug 'tpope/vim-sexp-mappings-for-regular-people'
+Plug 'Olical/vim-scheme', { 'for': 'scheme', 'on': 'SchemeConnect' }
+
 " linting
 " Plug 'w0rp/ale'
 " Plug 'scrooloose/syntastic'
 " Plug 'mtscout6/syntastic-local-eslint.vim' " use project eslint
 
-
 " Colorschemes
 " Plug 'keitanakamura/neodark.vim'
 " Plug 'lifepillar/vim-solarized8'
 " Plug 'morhetz/gruvbox'
-" Plug 'owickstrom/vim-colors-paramount'
 " Plug 'arcticicestudio/nord-vim'
 " Plug 'chriskempson/base16-vim'
+" Plug 'dylanaraps/wal'
+" Plug 'jaredgorski/spacecamp'
+Plug 'owickstrom/vim-colors-paramount'
 Plug 'romainl/apprentice'
-Plug 'dylanaraps/wal'
+Plug 'danishprakash/vim-yami'
 
 " Groovy syntax highlighting
 " autocmd BufRead,BufNewFile Jenkinsfile setf groovy
@@ -182,6 +189,7 @@ set guitablabel=%{GuiTabLabel()}
 set background=dark
 colorscheme apprentice
 
+let g:scheme_split_size = -10
 
 "" {{{{ netrw }}}}
 let g:netrw_banner = 0      " hide banner
@@ -223,8 +231,11 @@ noremap <Leader>w <C-w>
 
 noremap <Leader>e :e **/*
 noremap <Leader>h :cd ~/repos/<Cr>
-noremap <Leader>p :cd %:p:h<Cr>
+" noremap <Leader>p :cd %:p:h<Cr>
 noremap <Leader>r :s/:\(\w\+\)\(\s*\)=>\s*/\1:\2/g<Cr>
+noremap <Leader>y "+y
+noremap <Leader>p "+p
+noremap <Leader>P "+P
 
 " Vim Terminal
 " tnoremap <Esc> <C-W>N
@@ -234,7 +245,7 @@ noremap <Leader>r :s/:\(\w\+\)\(\s*\)=>\s*/\1:\2/g<Cr>
 " Scripts
 noremap gC :call ToggleVimrc()<Cr>
 noremap <Leader>= :call Whitespace()<Cr>
-noremap <Leader>o :call OpenBrackets()<Cr>
+" noremap <Leader>o :call OpenBrackets()<Cr>
 xnoremap <Leader>* :<C-u>call <SID>VSetSearch('/')<CR>/<C-R>=@/<CR><CR>
 xnoremap <Leader># :<C-u>call <SID>VSetSearch('?')<CR>?<C-R>=@/<CR><CR>
 
@@ -371,5 +382,5 @@ elseif executable('ag')
 endif
 
 "" {{{{ Last Call }}}}
-set path+=**
+" set path+=**
 set suffixesadd=.html.erb
