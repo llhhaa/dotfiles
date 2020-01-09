@@ -1,50 +1,16 @@
-" " {{{{ Intro }}}}
-" " TOC:
-
-" " Plugins
-" """ feature extension
-" """ syntax
-" """ misc
-" """ fzf
-
-" " Core Vim
-" """ general
-" """ whitespace
-" """ folding
-" """ searching
-" """ statusline
-" """ tabline
-
-" " Colorscheme (256 neodark)
-
-" " Netrw
-
-" " Linter Settings
-
-" " Keymappings
-
-" " Replace grep with ripgrep
-
-" " Last call (path+=**, cd to project)
-
+" Environment tools:
 " " Homebrew packages (not necessarily deps for Vim):
 " """ ripgrep
 " """ task
 " """ ctags
 " """ ruby
 " """ fzf
-
+" """ mit-scheme
 " " Fonts
 " """ Adobe Source Code Pro
 " """ Fira Mono
 
-" " Potential TODOs:
-" " use prettier to format javascript with gq[motion]
-" " [npm install -g prettier]
-" autocmd FileType javascript set formatprg=prettier\ --stdin
-
 "" {{{{ Vim-Plug }}}}
-
 if empty(glob('~/.vim/autoload/plug.vim'))
   silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
     \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
@@ -88,7 +54,6 @@ Plug 'Olical/vim-scheme', { 'for': 'scheme', 'on': 'SchemeConnect' }
 " Plug 'morhetz/gruvbox'
 " Plug 'arcticicestudio/nord-vim'
 " Plug 'chriskempson/base16-vim'
-" Plug 'dylanaraps/wal'
 " Plug 'jaredgorski/spacecamp'
 Plug 'owickstrom/vim-colors-paramount'
 Plug 'romainl/apprentice'
@@ -128,9 +93,7 @@ set ttimeoutlen=100
 set viminfo^=!              " keep capitalized global variables (for plugins)
 set wildignore +=**/node_modules/**
 set wildmenu
-"set relativenumber
 au FocusGained,BufEnter * checktime "like gVim, prompt if file changed
-
 " needed so vim gets the mouse in tmux
 set ttymouse=xterm2
 set mouse=a
@@ -143,7 +106,6 @@ endif
 highlight ColorColumn ctermbg=gray
 set colorcolumn=81
 
-
 "" {{{{ Whitespace }}}}
 set autoindent                  " use indent from prev line when starting new line
 set nowrap
@@ -155,18 +117,15 @@ set expandtab	                " use spaces, not tabs (optional)
 set backspace=indent,eol,start	" backspace through everything in insert mode
 set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
 
-
 "" {{{{ Folding }}}}
 set foldmethod=indent
 set foldcolumn=0
-
 
 "" {{{{ Searching }}}}
 set hlsearch    " highlight matches
 set incsearch	" incremental searching
 set ignorecase  " searches are case insensitive...
 set smartcase	" ... unless they contain at least one capital letter
-
 
 "" {{{{ statusline, tabline }}}}
 set laststatus=2                " always display statusline
@@ -181,7 +140,6 @@ set statusline+=\ %*            " highlight exit
 set guitablabel=                " clear for reload
 set guitablabel=%{GuiTabLabel()}
 
-
 "" {{{{ colorschemes }}}}
 "let g:neodark#use_256color = 1 " default: 0
 " set termguicolors             " for solarized
@@ -189,6 +147,7 @@ set guitablabel=%{GuiTabLabel()}
 set background=dark
 colorscheme apprentice
 
+"" {{{{ scheme }}}}
 let g:scheme_split_size = -10
 
 "" {{{{ netrw }}}}
@@ -211,7 +170,6 @@ let g:jsx_ext_required = 0
 " may need to revisit depending on project
 " let g:syntastic_javascript_eslint_exec = '~/.nvm/versions/node/v4.2.1/bin/eslint'
 " let g:syntastic_javascript_checkers = ['eslint']
-
 let g:ale_linters = {'javascript': ['eslint']}
 
 " Ruby/Rails settings
@@ -219,10 +177,8 @@ autocmd FileType ruby,eruby let g:rubycomplete_buffer_loading = 1
 autocmd FileType ruby,eruby let g:rubycomplete_classes_in_global = 1
 autocmd FileType ruby,eruby let g:rubycomplete_rails = 1
 
-
 "" {{{{ Commands }}}}
 let g:ctrlp_user_command = 'rg %s --files'
-
 
 "" {{{{ Keymappings }}}}
 map <Space> <leader>
@@ -271,12 +227,11 @@ noremap <Leader>L :tabnew +grep<space><C-r><C-w><Cr> :copen<Cr>
 "noremap gO :!open -a Adobe\ Photoshop\ CS5 <cfile><CR>
 
 " Vim-Test
-noremap <Leader>tt :TestNearest<Cr>
-noremap <Leader>tf :TestFile<Cr>
-noremap <Leader>ts :TestSuite<Cr>
-noremap <Leader>tl :TestLast<Cr>
-noremap <Leader>tv :TestVist<Cr>
-
+" noremap <Leader>tt :TestNearest<Cr>
+" noremap <Leader>tf :TestFile<Cr>
+" noremap <Leader>ts :TestSuite<Cr>
+" noremap <Leader>tl :TestLast<Cr>
+" noremap <Leader>tv :TestVist<Cr>
 
 "" {{{{ Functions }}}}
 function! GuiTabLabel()
@@ -368,7 +323,6 @@ function! s:VSetSearch(cmdtype)
   let @/ = '\V' . substitute(escape(@s, a:cmdtype.'\'), '\n', '\\n', 'g')
   let @s = temp
 endfunction
-
 
 "" {{{{ Plugin-specific settings }}}}
 " {{{ ripgrep }}}
