@@ -35,6 +35,7 @@ Plug 'junegunn/fzf.vim'
 Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-rails'
 Plug 'tpope/vim-rake'
+Plug 'ngmy/vim-rubocop'
 Plug 'tpope/vim-bundler'
 Plug 'tpope/vim-apathy'
 
@@ -176,9 +177,7 @@ let g:ale_linters = {'javascript': ['eslint']}
 autocmd FileType ruby,eruby let g:rubycomplete_buffer_loading = 1 
 autocmd FileType ruby,eruby let g:rubycomplete_classes_in_global = 1
 autocmd FileType ruby,eruby let g:rubycomplete_rails = 1
-
-"" {{{{ Commands }}}}
-let g:ctrlp_user_command = 'rg %s --files'
+let g:vimrubocop_rubocop_cmd = 'bundle exec rubocop '
 
 "" {{{{ Keymappings }}}}
 map <Space> <leader>
@@ -234,6 +233,9 @@ noremap <Leader>L :tabnew +grep<space><C-r><C-w><Cr> :copen<Cr>
 " noremap <Leader>tv :TestVist<Cr>
 
 "" {{{{ Functions }}}}
+command! DiffRuby vert new | set bt=nofile | set syntax=ruby | r ++edit # | 0d_
+	 	\ | diffthis | wincmd p | diffthis
+
 function! GuiTabLabel()
   let label = ''
   let bufnrlist = tabpagebuflist(v:lnum)
