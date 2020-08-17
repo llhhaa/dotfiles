@@ -15,6 +15,7 @@ plugins=(git)
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
+unsetopt nomatch
 
 ## Preferred editor for local and remote sessions
 if [[ -n $SSH_CONNECTION ]]; then
@@ -53,7 +54,7 @@ export RIPGREP_CONFIG_PATH=~/.ripgreprc
 ## Aliases
 # alias glog='git log --graph --oneline --decorate'
 alias be='bundle exec'
-alias rake="noglob rake" # required for certain strap tasks
+alias rake='noglob rake' # required for certain strap tasks
 alias inklinks='mdcat ~/repos/gists/inklinks/inklinks.md'
 alias inknotes='mdcat ~/repos/gists/inknotes/inknotes.md'
 alias railsnotes='mdcat ~/repos/gists/railsnotes/railsnotes.md'
