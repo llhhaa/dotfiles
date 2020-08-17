@@ -1,10 +1,9 @@
-" Environment tools:
+"Environment tools:
 " " Homebrew packages (not necessarily deps for Vim):
 " """ ripgrep
 " """ task
 " """ ctags
 " """ ruby
-" """ fzf
 " """ mit-scheme
 " " Fonts
 " """ Adobe Source Code Pro
@@ -26,10 +25,10 @@ Plug 'tpope/vim-surround'
 Plug 'kana/vim-textobj-user'
 Plug 'kana/vim-textobj-entire'
 Plug 'coderifous/textobj-word-column.vim'
-Plug '/usr/local/opt/fzf'
+Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 " Plug 'janko-m/vim-test'
-" Plug 'vimwiki/vimwiki'
+Plug 'vimwiki/vimwiki'
 
 " languages
 Plug 'sheerun/vim-polyglot'
@@ -59,6 +58,7 @@ Plug 'Olical/vim-scheme', { 'for': 'scheme', 'on': 'SchemeConnect' }
 Plug 'owickstrom/vim-colors-paramount'
 Plug 'romainl/apprentice'
 Plug 'danishprakash/vim-yami'
+Plug 'reedes/vim-colors-pencil'
 
 " Groovy syntax highlighting
 " autocmd BufRead,BufNewFile Jenkinsfile setf groovy
@@ -71,10 +71,6 @@ call plug#end()
 
 "my plugin :)
 "set rtp+=~/.vim/bundle/vim-rctoggle
-
-"fzf
-" set rtp+=/usr/local/opt/fzf " mac/homebrew
-"set rtp+=~/.fzf " linux/git
 
 "" {{{{ General Settings }}}}
 filetype plugin indent on
@@ -104,8 +100,8 @@ if v:version > 703 || v:version == 703 && has('patch541')
 endif
 
 " long line highlighting
-highlight ColorColumn ctermbg=gray
-set colorcolumn=81
+" highlight ColorColumn ctermbg=gray
+set colorcolumn=120
 
 "" {{{{ Whitespace }}}}
 set autoindent                  " use indent from prev line when starting new line
@@ -153,8 +149,10 @@ let g:scheme_split_size = -10
 
 "" {{{{ netrw }}}}
 let g:netrw_banner = 0      " hide banner
-"let g:netrw_liststyle = 3  " tree list (causes buffer bug)
 
+"" {{{{ vimwiki }}}}
+let g:vimwiki_list = [{'path': '~/repos/personal_wiki/',
+                      \ 'syntax': 'markdown', 'ext': '.md'}]
 
 "" {{{{ Linting }}}}
 " (manual invoke w/:SyntasticCheck)
@@ -172,6 +170,25 @@ let g:jsx_ext_required = 0
 " let g:syntastic_javascript_eslint_exec = '~/.nvm/versions/node/v4.2.1/bin/eslint'
 " let g:syntastic_javascript_checkers = ['eslint']
 let g:ale_linters = {'javascript': ['eslint']}
+
+"" {{{{ FZF }}}}
+" let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6, 'highlight': 'Todo', 'rounded': v:false } }
+" Customize fzf colors to match your color scheme
+" - fzf#wrap translates this to a set of `--color` options
+let g:fzf_colors =
+\ { 'fg':      ['fg', 'Normal'],
+  \ 'bg':      ['bg', 'Normal'],
+  \ 'hl':      ['fg', 'Comment'],
+  \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+  \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
+  \ 'hl+':     ['fg', 'Statement'],
+  \ 'info':    ['fg', 'PreProc'],
+  \ 'border':  ['fg', 'Ignore'],
+  \ 'prompt':  ['fg', 'Conditional'],
+  \ 'pointer': ['fg', 'Exception'],
+  \ 'marker':  ['fg', 'Keyword'],
+  \ 'spinner': ['fg', 'Label'],
+  \ 'header':  ['fg', 'Comment'] }
 
 " Ruby/Rails settings
 autocmd FileType ruby,eruby let g:rubycomplete_buffer_loading = 1 
@@ -203,6 +220,8 @@ noremap <Leader>= :call Whitespace()<Cr>
 " noremap <Leader>o :call OpenBrackets()<Cr>
 xnoremap <Leader>* :<C-u>call <SID>VSetSearch('/')<CR>/<C-R>=@/<CR><CR>
 xnoremap <Leader># :<C-u>call <SID>VSetSearch('?')<CR>?<C-R>=@/<CR><CR>
+
+noremap <Leader>s f"r:;x
 
 " External
 "" FZF
