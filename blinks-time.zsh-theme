@@ -1,5 +1,5 @@
-# blinks with time in the rprompt
-# 99% is just the https://github.com/blinks zsh-theme
+# blinks with time
+# based on https://github.com/blinks zsh theme
 
 function _prompt_char() {
   if $(git rev-parse --is-inside-work-tree >/dev/null 2>&1); then
@@ -19,10 +19,26 @@ case ${SOLARIZED_THEME:-dark} in
     *)     bkg=black;;
 esac
 
+# function _update_ruby_version()
+# {
+#     typeset -g ruby_version=''
+#     if which rvm-prompt &> /dev/null; then
+#       ruby_version="$(rvm-prompt i v g)"
+#       rvm-prompt i v g
+#     else
+#       if which rbenv &> /dev/null; then
+#         ruby_version="$(rbenv version | sed -e "s/ (set.*$//")"
+#       fi
+#     fi
+#     ruby_prompt="[%{$fg[red]%}$(ruby_version)%{$reset_color%}]"
+# }
+# chpwd_functions+=(_update_ruby_version)
+
 ZSH_THEME_GIT_PROMPT_PREFIX=" [%{%B%F{blue}%}"
 ZSH_THEME_GIT_PROMPT_SUFFIX="%{%f%k%b%K{${bkg}}%B%F{green}%}]"
 ZSH_THEME_GIT_PROMPT_DIRTY=" %{%F{red}%}*%{%f%k%b%}"
 ZSH_THEME_GIT_PROMPT_CLEAN=""
+
 
 PROMPT='%{%f%k%b%}
 %{%K{${bkg}}%B%F{green}%}%n%{%B%F{blue}%}@%{%B%F{cyan}%}%m%{%B%F{green}%} %{%b%F{yellow}%K{${bkg}}%}%~%{%B%F{green}%}$(git_prompt_info)%E%{%f%k%b%}
