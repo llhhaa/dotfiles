@@ -49,16 +49,16 @@ Plug 'Olical/vim-scheme', { 'for': 'scheme', 'on': 'SchemeConnect' }
 " Plug 'mtscout6/syntastic-local-eslint.vim' " use project eslint
 
 " Colorschemes
+Plug 'owickstrom/vim-colors-paramount'
+Plug 'romainl/apprentice'
 " Plug 'keitanakamura/neodark.vim'
 " Plug 'lifepillar/vim-solarized8'
 " Plug 'morhetz/gruvbox'
 " Plug 'arcticicestudio/nord-vim'
 " Plug 'chriskempson/base16-vim'
 " Plug 'jaredgorski/spacecamp'
-Plug 'owickstrom/vim-colors-paramount'
-Plug 'romainl/apprentice'
-Plug 'danishprakash/vim-yami'
-Plug 'reedes/vim-colors-pencil'
+" Plug 'danishprakash/vim-yami'
+" Plug 'reedes/vim-colors-pencil'
 
 " Groovy syntax highlighting
 " autocmd BufRead,BufNewFile Jenkinsfile setf groovy
@@ -143,6 +143,7 @@ set guitablabel=%{GuiTabLabel()}
 " set t_Co=256                  " for Terminal.app for certain colorschemes
 set background=dark
 colorscheme apprentice
+" highlight Comment cterm=italic gui=italic
 
 "" {{{{ scheme }}}}
 let g:scheme_split_size = -10
