@@ -47,6 +47,12 @@ export CPPFLAGS="-I/usr/local/opt/libiconv/include"
 
 export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$(brew --prefix)/opt/libffi/lib/pkgconfig"
 
+### AWS stuff
+export AWS_SESSION_SOURCE_PROFILE=default
+export AWS_SESSION_MFA=
+export AWS_SESSION_ROLE=
+export AWS_SESSION_CI_STANDARD_PROFILES=true
+
 export AUTOTOMY_ROOT=~/repos/autotomy
 export RIPGREP_CONFIG_PATH=~/.ripgreprc
 
@@ -59,6 +65,7 @@ alias inklinks='mdcat ~/repos/gists/inklinks/inklinks.md'
 alias inknotes='mdcat ~/repos/gists/inknotes/inknotes.md'
 alias railsnotes='mdcat ~/repos/gists/railsnotes/railsnotes.md'
 alias linecount='tee >(wc -l | xargs echo)' # for piping ripgrep
+alias login_aws='~/repos/aws_login/build/darwin-amd64/aws_login' # until it's in homebrew
 
 ## Functions
 function rtest () {
@@ -103,6 +110,10 @@ function rgg() {
 # match literal string for arg
 function rgl() {
   rg -F $1 $2
+}
+
+function rga() {
+  ( rg $1; rgg $1 )
 }
 
 ## Last Call
