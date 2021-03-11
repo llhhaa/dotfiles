@@ -388,7 +388,7 @@ font:
   #thickness: 0.15
 
 # Live config reload (changes require restart)
-#live_config_reload: true
+live_config_reload: true
 
 # Shell
 #
@@ -799,8 +799,20 @@ key_bindings:
   #- { key: F,              mods: Command|Control,            action: ToggleFullscreen }
   #- { key: F,              mods: Command, mode: ~Search,     action: SearchForward    }
   #- { key: B,              mods: Command, mode: ~Search,     action: SearchBackward   }
-  - { key: O,              mods: Command,                    chars:  "\x0a\x6e" }
-  - { key: P,              mods: Command,                    chars:  "\x0a\x70" }
+
+  # tmux bindings
+  - { key: P,              mods: Command,                    chars:  "\x0a\x6e" } # leader + n, next window
+  - { key: O,              mods: Command,                    chars:  "\x0a\x70" } # leader + p, prev window
+  - { key: T,              mods: Command,                    chars:  "\x0a\x63" } # leader + c, new window
+  - { key: X,              mods: Command,                    chars:  "\x0a\x78" } # leader + x, close pane
+  - { key: S,              mods: Command,                    chars:  "\x0a\x25" } # leader + %, vert split
+  - { key: D,              mods: Command,                    chars:  "\x0a\x22" } # leader + %, hori split
+  - { key: H,              mods: Command,                    chars:  "\x0a\x68" } # leader + h, pane nav left
+  - { key: J,              mods: Command,                    chars:  "\x0a\x6a" } # leader + j, pane nav down
+  - { key: K,              mods: Command,                    chars:  "\x0a\x6b" } # leader + k, pane nav up
+  - { key: L,              mods: Command,                    chars:  "\x0a\x6c" } # leader + l, pane nav right
+
+  # emacs navigation
   - { key: B,              mods: Alt,                        chars: "\x1bb" }
   - { key: F,              mods: Alt,                        chars: "\x1bf" }
 
