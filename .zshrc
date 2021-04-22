@@ -75,11 +75,21 @@ function rtest () {
     ruby -I test $1
   fi
 }
+
+function runtest () {
+  if ! [[ -z "$2" ]]; then
+    bin/run ruby -I test $1 -n "/$2/"
+  else
+    bin/run ruby -I test $1
+  fi
+}
+
 function servers () {
   cd $AUTOTOMY_ROOT && git pull
   bundle exec cap apps:$1:$2 list:servers
   cd -
 }
+
 function deploy () {
   cd $AUTOTOMY_ROOT && git pull
   bundle exec cap apps:$1:$2 deploy
@@ -112,8 +122,23 @@ function rgl() {
   rg -F $1 $2
 }
 
+# match a string in files AND filenames
 function rga() {
   ( rg $1; rgg $1 )
+}
+
+# find and replace. leave second arg blank for find-and-remove.
+# supports filenames with whitespace.
+function rgr() {
+  rg $1 --files-with-matches -0 | xargs -0 sed -i '' "s/$1/$2/g"
+}
+
+function shorten() {
+  if ! [[ -z "$2" ]]; then
+    curl -i https://git.io -F "url=$1" -F "code=$2"
+  else
+    curl -i https://git.io -F "url=$1"
+  fi
 }
 
 ## Last Call
