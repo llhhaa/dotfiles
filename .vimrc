@@ -8,6 +8,7 @@
 " " Fonts
 " """ Adobe Source Code Pro
 " """ Fira Mono
+" """ Iosevka
 
 "" {{{{ Vim-Plug }}}}
 if empty(glob('~/.vim/autoload/plug.vim'))
