@@ -1,6 +1,12 @@
 # l-abel-dotfiles
 not just dotfiles!
 
+to create symlinks for dotfiles, run:
+
+```shell
+ln -sv /path/to/dotfiles/.mydotfile ~
+```
+
 ## vim
 #### Highlights:
 
