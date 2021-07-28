@@ -43,11 +43,6 @@ Plug 'guns/vim-sexp' " for selecting forms.
 Plug 'tpope/vim-sexp-mappings-for-regular-people'
 Plug 'Olical/vim-scheme', { 'for': 'scheme', 'on': 'SchemeConnect' }
 
-" linting
-" Plug 'w0rp/ale'
-" Plug 'scrooloose/syntastic'
-" Plug 'mtscout6/syntastic-local-eslint.vim' " use project eslint
-
 " Colorschemes
 Plug 'owickstrom/vim-colors-paramount'
 Plug 'romainl/apprentice'
@@ -60,21 +55,12 @@ Plug 'romainl/apprentice'
 " Plug 'danishprakash/vim-yami'
 " Plug 'reedes/vim-colors-pencil'
 
-" Groovy syntax highlighting
-" autocmd BufRead,BufNewFile Jenkinsfile setf groovy
-" autocmd BufRead,BufNewFile Jenkinsfile* setf groovy
-" autocmd BufRead,BufNewFile *.jenkinsfile setf groovy
-" autocmd BufRead,BufNewFile *.jenkinsfile setf groovy
-" autocmd BufRead,BufNewFile *.gradle setf groovy
-
 call plug#end()
-
-"my plugin :)
-"set rtp+=~/.vim/bundle/vim-rctoggle
 
 "" {{{{ General Settings }}}}
 filetype plugin indent on
 syntax enable
+set re=0
 set encoding=utf-8
 set history=1000
 set nocompatible            " no compatibility with legacy vi, required for Vundle
@@ -155,23 +141,6 @@ let g:netrw_banner = 0      " hide banner
 let g:vimwiki_list = [{'path': '~/repos/personal_wiki/',
                       \ 'syntax': 'markdown', 'ext': '.md'}]
 
-"" {{{{ Linting }}}}
-" (manual invoke w/:SyntasticCheck)
-" let g:syntastic_mode_map = { 'mode': 'active',
-"                             \ 'active_filetypes': ['javascript'],
-"                             \ 'passive_filetypes': [] }
-let g:jsx_ext_required = 0
-" let g:syntastic_always_populate_loc_list = 1
-" let g:syntastic_auto_loc_list = 0
-" let g:syntastic_check_on_open = 0
-" let g:syntastic_check_on_wq = 0
-" attempted fix for nvm/vim/eslint path issue
-" currently resolved with 'local eslint plugin'
-" may need to revisit depending on project
-" let g:syntastic_javascript_eslint_exec = '~/.nvm/versions/node/v4.2.1/bin/eslint'
-" let g:syntastic_javascript_checkers = ['eslint']
-let g:ale_linters = {'javascript': ['eslint']}
-
 "" {{{{ FZF }}}}
 " let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6, 'highlight': 'Todo', 'rounded': v:false } }
 " Customize fzf colors to match your color scheme
@@ -191,8 +160,6 @@ let g:fzf_colors =
   \ 'spinner': ['fg', 'Label'],
   \ 'header':  ['fg', 'Comment'] }
 
-"" {{{{ vim-vue }}}}
-let g:vue_pre_processors = []
 
 " Ruby/Rails settings
 autocmd FileType ruby,eruby let g:rubycomplete_buffer_loading = 1 
