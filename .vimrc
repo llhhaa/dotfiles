@@ -191,6 +191,9 @@ let g:fzf_colors =
   \ 'spinner': ['fg', 'Label'],
   \ 'header':  ['fg', 'Comment'] }
 
+"" {{{{ vim-vue }}}}
+let g:vue_pre_processors = []
+
 " Ruby/Rails settings
 autocmd FileType ruby,eruby let g:rubycomplete_buffer_loading = 1 
 autocmd FileType ruby,eruby let g:rubycomplete_classes_in_global = 1
@@ -206,6 +209,7 @@ noremap <Leader>e :e **/*
 noremap <Leader>h :cd ~/repos/<Cr>
 " noremap <Leader>p :cd %:p:h<Cr>
 noremap <Leader>r :s/:\(\w\+\)\(\s*\)=>\s*/\1:\2/g<Cr>
+"copy and paste from keyboard
 noremap <Leader>y "+y
 noremap <Leader>p "+p
 noremap <Leader>P "+P
@@ -218,7 +222,6 @@ noremap <Leader>P "+P
 " Scripts
 noremap gC :call ToggleVimrc()<Cr>
 noremap <Leader>= :call Whitespace()<Cr>
-" noremap <Leader>o :call OpenBrackets()<Cr>
 xnoremap <Leader>* :<C-u>call <SID>VSetSearch('/')<CR>/<C-R>=@/<CR><CR>
 xnoremap <Leader># :<C-u>call <SID>VSetSearch('?')<CR>?<C-R>=@/<CR><CR>
 
@@ -330,14 +333,6 @@ function! ToggleVimrc() " switch to vimrc depending on context
   unlet s:keep_sb
 endfunction
 
-function! OpenBrackets() abort
-  " TODO: make the start of insert mode indented
-  " TODO: have it abort silently
-  .s/\v(\{|\[)/\1\r/
-  execute "normal! O"
-  startinsert
-endfunction
-
 " Visual-Star
 function! s:VSetSearch(cmdtype)
   let temp = @s
@@ -352,9 +347,9 @@ endfunction
 if executable('rg')
   set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case\ --ignore-file\ ~/.rgignore
   set grepformat=%f:%l:%c:%m,%f:%l:%m
-elseif executable('ag')
-  set grepprg=ag\ --vimgrep\ --ignore=\"**.min.js\"
-  set grepformat=%f:%l:%c:%m,%f:%l:%m
+" elseif executable('ag')
+"   set grepprg=ag\ --vimgrep\ --ignore=\"**.min.js\"
+"   set grepformat=%f:%l:%c:%m,%f:%l:%m
 endif
 
 "" {{{{ Last Call }}}}

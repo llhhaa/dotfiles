@@ -1,0 +1,11 @@
+# for home directory searches
+Library/
+
+# project directories
+/.bundle/
+/.git/
+/cassettes/
+/log/
+/node_modules/
+/vendor/
+/Trash/

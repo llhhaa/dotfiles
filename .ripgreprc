@@ -5,19 +5,20 @@
 --follow
 
 # Don't respect ignore files (.gitignore, .ignore, etc.).
---no-ignore
+# --no-ignore
 
 # Exclude directories.
---glob=!{.git,.svn,.tldr,node_modules,Trash,vendor}
+# --glob=!{.git,.svn,.tldr,.bundle,node_modules,Trash,vendor,cassettes,log}
 
 # Exclude file types.
---glob=!*.{lock,tmp}
+# --glob=!*.{lock,tmp}
 
 # Exclude files.
 --glob=!{package-lock.json}
 
 # Don't print lines longer than this limit.
---max-columns=10000
+--max-columns=1000
+--max-columns-preview
 
 # Searches case insensitively.
 --smart-case
