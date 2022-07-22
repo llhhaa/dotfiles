@@ -2,10 +2,10 @@
 Library/
 
 # project directories
-/.bundle/
-/.git/
-/cassettes/
-/log/
-/node_modules/
-/vendor/
-/Trash/
+.bundle/
+.git/
+cassettes/
+log/
+node_modules/
+vendor/
+Trash/
