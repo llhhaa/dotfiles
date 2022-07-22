@@ -27,8 +27,8 @@ Plug 'kana/vim-textobj-entire'
 Plug 'coderifous/textobj-word-column.vim'
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
+Plug 'itspriddle/vim-marked'
 " Plug 'janko-m/vim-test'
-Plug 'vimwiki/vimwiki'
 
 " languages
 Plug 'sheerun/vim-polyglot'
@@ -37,6 +37,8 @@ Plug 'tpope/vim-rake'
 Plug 'ngmy/vim-rubocop'
 Plug 'tpope/vim-bundler'
 Plug 'tpope/vim-apathy'
+Plug 'mechatroner/rainbow_csv'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 " scheme!
 Plug 'guns/vim-sexp' " for selecting forms.
@@ -46,14 +48,6 @@ Plug 'Olical/vim-scheme', { 'for': 'scheme', 'on': 'SchemeConnect' }
 " Colorschemes
 Plug 'owickstrom/vim-colors-paramount'
 Plug 'romainl/apprentice'
-" Plug 'keitanakamura/neodark.vim'
-" Plug 'lifepillar/vim-solarized8'
-" Plug 'morhetz/gruvbox'
-" Plug 'arcticicestudio/nord-vim'
-" Plug 'chriskempson/base16-vim'
-" Plug 'jaredgorski/spacecamp'
-" Plug 'danishprakash/vim-yami'
-" Plug 'reedes/vim-colors-pencil'
 
 call plug#end()
 
@@ -77,6 +71,7 @@ set viminfo^=!              " keep capitalized global variables (for plugins)
 set wildignore +=**/node_modules/**
 set wildmenu
 au FocusGained,BufEnter * checktime "like gVim, prompt if file changed
+
 " needed so vim gets the mouse in tmux
 set ttymouse=xterm2
 set mouse=a
@@ -160,6 +155,47 @@ let g:fzf_colors =
   \ 'spinner': ['fg', 'Label'],
   \ 'header':  ['fg', 'Comment'] }
 
+" { CoC }
+" https://pragmaticpineapple.com/ultimate-vim-typescript-setup/
+set hidden
+set nobackup
+set nowritebackup
+set cmdheight=2
+set updatetime=300
+set shortmess+=c
+
+" Always show the signcolumn, otherwise it would shift the text each time
+" diagnostics appear/become resolved.
+if has("nvim-0.5.0") || has("patch-8.1.1564")
+  " Recently vim can merge signcolumn and number column into one
+  set signcolumn=number
+else
+  set signcolumn=yes
+endif
+
+" Use tab for trigger completion with characters ahead and navigate.
+" NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
+" other plugin before putting this into your config.
+inoremap <silent><expr> <TAB>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+" Use <c-space> to trigger completion.
+if has('nvim')
+  inoremap <silent><expr> <c-space> coc#refresh()
+else
+  inoremap <silent><expr> <c-@> coc#refresh()
+endif
+
+let g:coc_global_extensions = ['coc-tserver']
+
+" END COC
 
 " Ruby/Rails settings
 autocmd FileType ruby,eruby let g:rubycomplete_buffer_loading = 1 
@@ -180,6 +216,7 @@ noremap <Leader>r :s/:\(\w\+\)\(\s*\)=>\s*/\1:\2/g<Cr>
 noremap <Leader>y "+y
 noremap <Leader>p "+p
 noremap <Leader>P "+P
+noremap <Leader>v viw"0p
 
 " Vim Terminal
 " tnoremap <Esc> <C-W>N
@@ -211,6 +248,12 @@ noremap <Leader>G :tabnew +grep\<space>
 " grep  word under cursor
 noremap <Leader>l :grep<space><C-r><C-w><Cr> :copen<Cr>
 noremap <Leader>L :tabnew +grep<space><C-r><C-w><Cr> :copen<Cr>
+
+" go to file line in GitHub
+noremap gB :'<,'>GBrowse<Cr>
+
+" Open alternate file in below split
+noremap <Leader>S :sp<Cr>:A<Cr><C-w>J
 
 " open file
 "noremap gO :!open -a Adobe\ Photoshop\ CS5 <cfile><CR>
@@ -266,7 +309,8 @@ function! Whitespace() " whitespace and endline cleanup function
 endfunction
 "" for regex breakdown: http://stackoverflow.com/q/7495932/
 
-function! ToggleVimrc() " switch to vimrc depending on context
+" switch to vimrc depending on context
+function! ToggleVimrc() 
   let s:keep_sb = &switchbuf
   set switchbuf=useopen,usetab
 
@@ -310,13 +354,10 @@ endfunction
 
 "" {{{{ Plugin-specific settings }}}}
 " {{{ ripgrep }}}
-"  use ripgrep (or silver searcher) instead of grep
+"  use ripgrep instead of grep
 if executable('rg')
   set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case\ --ignore-file\ ~/.rgignore
   set grepformat=%f:%l:%c:%m,%f:%l:%m
-" elseif executable('ag')
-"   set grepprg=ag\ --vimgrep\ --ignore=\"**.min.js\"
-"   set grepformat=%f:%l:%c:%m,%f:%l:%m
 endif
 
 "" {{{{ Last Call }}}}
