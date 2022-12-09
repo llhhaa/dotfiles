@@ -103,24 +103,6 @@ function runtest () {
   fi
 }
 
-function servers () {
-  cd $AUTOTOMY_ROOT && git pull
-  bundle exec cap apps:$1:$2 list:servers
-  cd -
-}
-
-function deploy () {
-  cd $AUTOTOMY_ROOT && git pull
-  bundle exec cap apps:$1:$2 deploy
-  cd -
-}
-
-function tail_log () {
-  cd $AUTOTOMY_ROOT && git pull
-  bundle exec cap apps:$1:$2 tail:app_log
-  cd -
-}
-
 # get running pods whose name includes a substring
 # param1: namespace
 # param2: pod name substring
