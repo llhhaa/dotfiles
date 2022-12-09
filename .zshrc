@@ -12,6 +12,7 @@ plugins=(git)
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
+setopt histignorealldups
 setopt INC_APPEND_HISTORY # important for devkick
 unsetopt nomatch
 
