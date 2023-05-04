@@ -28,6 +28,7 @@ Plug 'coderifous/textobj-word-column.vim'
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 Plug 'itspriddle/vim-marked'
+Plug 'github/copilot.vim'
 " Plug 'janko-m/vim-test'
 
 " languages
@@ -160,6 +161,7 @@ let g:fzf_colors =
 set hidden
 set nobackup
 set nowritebackup
+set noswapfile
 set cmdheight=2
 set updatetime=300
 set shortmess+=c
@@ -174,14 +176,22 @@ else
 endif
 
 " Use tab for trigger completion with characters ahead and navigate.
+" NOTE: There's always complete item selected by default, you may want to enable
+" no select by `"suggest.noselect": true` in your configuration file.
 " NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
 " other plugin before putting this into your config.
 inoremap <silent><expr> <TAB>
-      \ pumvisible() ? "\<C-n>" :
-      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#pum#visible() ? coc#pum#next(1) :
+      \ CheckBackspace() ? "\<Tab>" :
       \ coc#refresh()
-inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
-function! s:check_back_space() abort
+inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+
+" Make <CR> to accept selected completion item or notify coc.nvim to format
+" <C-g>u breaks current undo, please make your own choice.
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+                              \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+function! CheckBackspace() abort
   let col = col('.') - 1
   return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
@@ -193,7 +203,7 @@ else
   inoremap <silent><expr> <c-@> coc#refresh()
 endif
 
-let g:coc_global_extensions = ['coc-tserver']
+let g:coc_global_extensions = ['coc-tsserver']
 
 " END COC
 
@@ -250,13 +260,10 @@ noremap <Leader>l :grep<space><C-r><C-w><Cr> :copen<Cr>
 noremap <Leader>L :tabnew +grep<space><C-r><C-w><Cr> :copen<Cr>
 
 " go to file line in GitHub
-noremap gB :'<,'>GBrowse<Cr>
+noremap <Leader>k :'<,'>GBrowse!<Cr>
 
 " Open alternate file in below split
 noremap <Leader>S :sp<Cr>:A<Cr><C-w>J
-
-" open file
-"noremap gO :!open -a Adobe\ Photoshop\ CS5 <cfile><CR>
 
 " Vim-Test
 " noremap <Leader>tt :TestNearest<Cr>
@@ -264,6 +271,9 @@ noremap <Leader>S :sp<Cr>:A<Cr><C-w>J
 " noremap <Leader>ts :TestSuite<Cr>
 " noremap <Leader>tl :TestLast<Cr>
 " noremap <Leader>tv :TestVist<Cr>
+
+" Copilot
+noremap <Leader>c :Copilot panel
 
 "" {{{{ Functions }}}}
 command! DiffRuby vert new | set bt=nofile | set syntax=ruby | r ++edit # | 0d_
