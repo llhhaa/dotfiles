@@ -12,6 +12,7 @@ plugins=(git)
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
+setopt histignorealldups
 setopt INC_APPEND_HISTORY # important for devkick
 unsetopt nomatch
 
@@ -98,24 +99,6 @@ function runtest () {
   else
     bin/run ruby -I test $1
   fi
-}
-
-function servers () {
-  cd $AUTOTOMY_ROOT && git pull
-  bundle exec cap apps:$1:$2 list:servers
-  cd -
-}
-
-function deploy () {
-  cd $AUTOTOMY_ROOT && git pull
-  bundle exec cap apps:$1:$2 deploy
-  cd -
-}
-
-function tail_log () {
-  cd $AUTOTOMY_ROOT && git pull
-  bundle exec cap apps:$1:$2 tail:app_log
-  cd -
 }
 
 # get running pods whose name includes a substring
