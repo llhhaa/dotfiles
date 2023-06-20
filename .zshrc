@@ -81,8 +81,7 @@ alias inknotes='mdcat ~/repos/gists/inknotes/inknotes.md'
 alias railsnotes='mdcat ~/repos/gists/railsnotes/railsnotes.md'
 alias linecount='tee >(wc -l | xargs echo)' # for piping ripgrep
 alias login_aws='~/repos/aws_login/build/darwin-amd64/aws_login' # until it's in homebrew
-alias caff='caffeinate -dimsut 36000'
-alias cafftime='pmset -g assertions'
+alias caff='caffdown 36000'
 
 ## Functions
 function rtest () {
@@ -172,7 +171,80 @@ function shorten() {
   fi
 }
 
+# The following function runs the caffeinate command for a given number of seconds,
+# and then displays a countdown for that amount of time.
+# It hides the curser while the countdown is running, and then displays a message
+# when the countdown is complete, and restores the cursor visibility.
+function caffdown() {
+  caffeinate -dimsut $1 &
+  local caffeinate_pid=$!
+  tput civis
+
+  trap "local stop_script=1; kill $caffeinate_pid; tput cnorm; echo \"\n caffdown cancelled!\"" SIGINT SIGTERM EXIT
+
+  for i in $(seq $1 -1 1); do
+    local hours=$((i/3600))
+    local minutes=$(( (i%3600)/60 ))
+    local seconds=$(( (i%60) ))
+    
+    printf "%02d:%02d:%02d\033[0K\r" $hours $minutes $seconds
+
+    if [[ $stop_script ]]; then
+      break
+    fi
+    sleep 1
+  done
+
+  tput cnorm
+
+  trap - SIGINT SIGTERM EXIT
+}
+
+# retrieve and set environment variables in the MacOS Keychain
+function keychain-environment-variable () {
+  security find-generic-password -w -a ${USER} -D "environment variable" -s "${1}"
+}
+
+function set-keychain-environment-variable () {
+  [ -n "$1" ] || print "Missing environment variable name"
+  read "?Enter Value for ${1}: " secret
+  ( [ -n "$1" ] && [ -n "$secret" ] ) || return 1
+  security add-generic-password -U -a ${USER} -D "environment variable" -s "${1}" -w "${secret}"
+}
+
+# Automatically set keychain-stored environment variables in the current shell
+if command -v security >/dev/null 2>&1; then
+  export GITHUB_TOKEN=$(keychain-environment-variable GITHUB_TOKEN);
+  export RAILS_LTS_KEY=$(keychain-environment-variable RAILS_LTS_KEY);
+fi
+
+# console command for shelling into a devcontainer
+function dc-console() {
+  DEVC_JSON=$(devcontainer read-configuration --workspace-folder .)
+  DEVC_USER=$(echo $DEVC_JSON | jq -r '.configuration.remoteUser' || echo 'vscode')
+  DEVC_WORKDIR=$(echo $DEVC_JSON | jq -r '.workspace.workspaceFolder')
+  CONTAINER_ID=$(docker ps --filter "status=running" --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.ID}}")
+  SSH_AUTH_SOCK=$(docker exec $CONTAINER_ID bash -c 'ls -t /tmp/vscode-ssh-auth* | head -1')
+  REMOTE_CONTAINERS_IPC=$(docker exec $CONTAINER_ID bash -c 'find /tmp -name "vscode-remote-containers-ipc*" | head -1')
+  docker exec \
+    --env REMOTE_CONTAINERS=true \
+    --env REMOTE_CONTAINERS_IPC=$REMOTE_CONTAINERS_IPC \
+    --env SSH_AUTH_SOCK=$SSH_AUTH_SOCK \
+    --env GITHUB_USER \
+    --env GITHUB_TOKEN \
+    --user $DEVC_USER \
+    --workdir $DEVC_WORKDIR \
+    --interactive \
+    --tty \
+    $CONTAINER_ID \
+    /bin/zsh
+}
+
 ## Last Call
+if [ -e ~/.github-credentials ]; then
+  . ~/.github-credentials
+fi
+
 if [ "$(uname -s)" = "Darwin" ]; then
   eval "$(rbenv init -)"
 else
@@ -181,12 +253,8 @@ else
   fi
 fi
 
-if [ -e ~/.github-credentials ]; then
-  . ~/.github-credentials
-fi
-
 if [ "$(uname -s)" = "Darwin" ]; then
   eval "$(pyenv init -)"
+  eval "$(nodenv init -)"
 fi
 
-eval "$(nodenv init -)"
