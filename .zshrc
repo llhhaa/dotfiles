@@ -19,6 +19,8 @@ unsetopt nomatch
 ## Preferred editor for local and remote sessions
 if [[ -n $SSH_CONNECTION ]]; then
   export EDITOR='vim'
+elif [[ -n $CODESPACES ]]; then
+  export EDITOR='vim.tiny'
 else
   export EDITOR='vim'
 fi
