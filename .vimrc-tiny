@@ -1,0 +1,120 @@
+"" {{{{ General Settings }}}}
+filetype plugin indent on
+syntax enable
+set re=0
+set encoding=utf-8
+set history=1000
+set nocompatible            " no compatibility with legacy vi, required for Vundle
+set number                  " show line numbers
+set ruler
+set scrolloff=2             " lines displayed above/below cursor
+set sessionoptions-=options " don't keep options in sessions
+set showcmd		    " display incomplete commands
+set sidescrolloff=5         " keep 5 cols to the left/right of cursor
+set tabpagemax=50
+set ttimeout
+set ttimeoutlen=100
+set viminfo^=!              " keep capitalized global variables (for plugins)
+set wildignore +=**/node_modules/**
+set wildmenu
+au FocusGained,BufEnter * checktime "like gVim, prompt if file changed
+
+if v:version > 703 || v:version == 703 && has('patch541')
+  set formatoptions+=j " smart line joining in comments
+endif
+
+"" {{{{ Whitespace }}}}
+set autoindent                  " use indent from prev line when starting new line
+set nowrap
+set tabstop=8                   " recommended default, use below settings for 'actual' tabsize
+set softtabstop=2
+set shiftwidth=2
+set smarttab                    " use shiftwidth (value used in >> cmd) when tabbing
+set expandtab	                " use spaces, not tabs (optional)
+set backspace=indent,eol,start	" backspace through everything in insert mode
+set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
+
+"" {{{{ Folding }}}}
+set foldmethod=indent
+set foldcolumn=0
+
+"" {{{{ Searching }}}}
+set hlsearch    " highlight matches
+set incsearch	" incremental searching
+set ignorecase  " searches are case insensitive...
+set smartcase	" ... unless they contain at least one capital letter
+
+"" {{{{ statusline, tabline }}}}
+set laststatus=2                " always display statusline
+set statusline=                 " clear out for reload
+set statusline=%3.3n            " buffer number
+set statusline+=\ %F%M          " full file path + modified flag
+set statusline+=\ %L/%l:%c      " linetotal/line:col
+set statusline+=\ %h%m%r%w      " status flags
+set statusline+=\ %#warningmsg# " highlight switch
+"set statusline+=\ %{SyntasticStatuslineFlag()}
+set statusline+=\ %*            " highlight exit
+set guitablabel=                " clear for reload
+set guitablabel=%{GuiTabLabel()}
+
+"" {{{{ Keymappings }}}}
+map <Space> <leader>
+"moving pane manipulation over to space-w, easier to use on 40% keyboards
+noremap <Leader>w <C-w>
+
+noremap <Leader>e :e **/*
+noremap <Leader>h :cd ~/repos/<Cr>
+" noremap <Leader>p :cd %:p:h<Cr>
+noremap <Leader>r :s/:\(\w\+\)\(\s*\)=>\s*/\1:\2/g<Cr>
+"copy and paste from keyboard
+noremap <Leader>y "+y
+noremap <Leader>p "+p
+noremap <Leader>P "+P
+noremap <Leader>v viw"0p
+
+" Scripts
+noremap gC :call ToggleVimrc()<Cr>
+noremap <Leader>= :call Whitespace()<Cr>
+xnoremap <Leader>* :<C-u>call <SID>VSetSearch('/')<CR>/<C-R>=@/<CR><CR>
+xnoremap <Leader># :<C-u>call <SID>VSetSearch('?')<CR>?<C-R>=@/<CR><CR>
+
+noremap <Leader>s f"r:;x
+
+" External
+"" FZF
+noremap <Leader>f :GFiles<Cr>
+noremap <Leader>F :Files<Cr>
+noremap <Leader>b :Buffers<CR>
+noremap <Leader>h :History<CR>
+noremap <Leader>/ :Rg<CR>
+" noremap <Leader>l :BLines<CR>
+" noremap <Leader>L :Lines<CR>
+" noremap <Leader>' :Marks<CR>
+
+noremap <Leader>g :grep\<space>
+noremap <Leader>G :tabnew +grep\<space>
+
+" grep  word under cursor
+noremap <Leader>l :grep<space><C-r><C-w><Cr> :copen<Cr>
+noremap <Leader>L :tabnew +grep<space><C-r><C-w><Cr> :copen<Cr>
+
+" go to file line in GitHub
+noremap <Leader>k :'<,'>GBrowse!<Cr>
+
+" Open alternate file in below split
+noremap <Leader>S :sp<Cr>:A<Cr><C-w>J
+
+" Copilot
+noremap <Leader>c :Copilot panel
+
+"" {{{{ Plugin-specific settings }}}}
+" {{{ ripgrep }}}
+"  use ripgrep instead of grep
+if executable('rg')
+  set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case\ --ignore-file\ ~/.rgignore
+  set grepformat=%f:%l:%c:%m,%f:%l:%m
+endif
+
+"" {{{{ Last Call }}}}
+" set path+=**
+set suffixesadd=.html.erb
