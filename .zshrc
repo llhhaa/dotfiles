@@ -197,6 +197,7 @@ function set-keychain-environment-variable () {
 
 # Automatically set keychain-stored environment variables in the current shell
 if command -v security >/dev/null 2>&1; then
+  export GITHUB_USER=$(keychain-environment-variable GITHUB_USER);
   export GITHUB_TOKEN=$(keychain-environment-variable GITHUB_TOKEN);
   export RAILS_LTS_KEY=$(keychain-environment-variable RAILS_LTS_KEY);
 fi

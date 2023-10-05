@@ -260,17 +260,10 @@ noremap <Leader>l :grep<space><C-r><C-w><Cr> :copen<Cr>
 noremap <Leader>L :tabnew +grep<space><C-r><C-w><Cr> :copen<Cr>
 
 " go to file line in GitHub
-noremap <Leader>k :'<,'>GBrowse!<Cr>
+noremap <Leader>B :'<,'>GBrowse!<Cr>
 
 " Open alternate file in below split
 noremap <Leader>S :sp<Cr>:A<Cr><C-w>J
-
-" Vim-Test
-" noremap <Leader>tt :TestNearest<Cr>
-" noremap <Leader>tf :TestFile<Cr>
-" noremap <Leader>ts :TestSuite<Cr>
-" noremap <Leader>tl :TestLast<Cr>
-" noremap <Leader>tv :TestVist<Cr>
 
 " Copilot
 noremap <Leader>c :Copilot panel
