@@ -4,7 +4,6 @@
 " """ task
 " """ ctags
 " """ ruby
-" """ mit-scheme
 " " Fonts
 " """ Adobe Source Code Pro
 " """ Fira Mono
@@ -41,11 +40,6 @@ Plug 'tpope/vim-apathy'
 Plug 'mechatroner/rainbow_csv'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
-" scheme!
-Plug 'guns/vim-sexp' " for selecting forms.
-Plug 'tpope/vim-sexp-mappings-for-regular-people'
-Plug 'Olical/vim-scheme', { 'for': 'scheme', 'on': 'SchemeConnect' }
-
 " Colorschemes
 Plug 'owickstrom/vim-colors-paramount'
 Plug 'romainl/apprentice'
@@ -73,12 +67,23 @@ set wildignore +=**/node_modules/**
 set wildmenu
 au FocusGained,BufEnter * checktime "like gVim, prompt if file changed
 
+" { CoC }
+" https://pragmaticpineapple.com/ultimate-vim-typescript-setup/
+set hidden
+set nobackup
+set nowritebackup
+set noswapfile
+set cmdheight=2
+set updatetime=300
+set shortmess+=c
+
 " needed so vim gets the mouse in tmux
 set ttymouse=xterm2
 set mouse=a
 
+" smart line joining in comments
 if v:version > 703 || v:version == 703 && has('patch541')
-  set formatoptions+=j " smart line joining in comments
+  set formatoptions+=j
 endif
 
 " long line highlighting
@@ -127,15 +132,8 @@ set background=dark
 colorscheme apprentice
 " highlight Comment cterm=italic gui=italic
 
-"" {{{{ scheme }}}}
-let g:scheme_split_size = -10
-
 "" {{{{ netrw }}}}
 let g:netrw_banner = 0      " hide banner
-
-"" {{{{ vimwiki }}}}
-let g:vimwiki_list = [{'path': '~/repos/personal_wiki/',
-                      \ 'syntax': 'markdown', 'ext': '.md'}]
 
 "" {{{{ FZF }}}}
 " let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6, 'highlight': 'Todo', 'rounded': v:false } }
@@ -156,16 +154,9 @@ let g:fzf_colors =
   \ 'spinner': ['fg', 'Label'],
   \ 'header':  ['fg', 'Comment'] }
 
+
 " { CoC }
 " https://pragmaticpineapple.com/ultimate-vim-typescript-setup/
-set hidden
-set nobackup
-set nowritebackup
-set noswapfile
-set cmdheight=2
-set updatetime=300
-set shortmess+=c
-
 " Always show the signcolumn, otherwise it would shift the text each time
 " diagnostics appear/become resolved.
 if has("nvim-0.5.0") || has("patch-8.1.1564")
