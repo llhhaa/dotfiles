@@ -10,7 +10,16 @@ COMPLETION_WAITING_DOTS="true"
 plugins=(git)
 source $ZSH/oh-my-zsh.sh
 
+# initialize homebrew
 eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# make sure keys are added to the agent
+if ! ssh-add -l | grep -q "luke.abel@simplethread.com"; then
+  ssh-add --apple-use-keychain ~/.ssh/id_ed25519
+fi
+if ! ssh-add -l | grep -q "luke.abel@gmail.com"; then
+  ssh-add --apple-use-keychain ~/.ssh/id_ed25519_pers
+fi
 
 # initialize fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
@@ -56,6 +65,26 @@ alias be='bundle exec'
 alias rake='noglob rake' # required for certain strap tasks
 alias linecount='tee >(wc -l | xargs echo)' # for piping ripgrep
 alias caff='caffdown 36000'
+
+function git-log-clean() {
+  local log=$(git --no-pager log --pretty="%s. %b" --author=luke.abel@simplethread.com --since=$1 --until=$2 --all --no-merges)
+  if [[ -n "$log" ]]; then
+    echo "$log" | awk '!/^index on/' | awk '!x[$0]++' | sed 's/\*/\'$'\n\*/g' | sed '/^$/d' | sed '1!G;h;$!d'
+  else
+    echo "No commits found"
+  fi
+}
+function git-echo-copy() {
+  local yesterday=$(git-log-clean $1 $2)
+  echo "$yesterday" 
+
+  if [[ "$yesterday" != "No commits found" ]]; then
+    git-log-clean $1 $2 | pbcopy
+  fi
+}
+
+function gitToday() { git-echo-copy midnight }
+function gitYesterday() { git-echo-copy yesterday.midnight midnight }
 
 ## Functions
 function rtest () {
@@ -119,6 +148,10 @@ function rgr() {
   rg $1 --files-with-matches -0 | xargs -0 sed -i '' "s/$1/$2/g"
 }
 
+function rgcount() {
+  rg $1 | tee >(wc -l | xargs echo)
+}
+
 # The following function runs the caffeinate command for a given number of seconds,
 # and then displays a countdown for that amount of time.
 # It hides the curser while the countdown is running, and then displays a message
@@ -169,8 +202,8 @@ fi
 ## Last Call
 if [ "$(uname -s)" = "Darwin" ]; then
   eval "$(rbenv init -)"
-  [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
-  [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+  [ -s "$(brew --prefix)/opt/nvm/nvm.sh" ] && \. "$(brew --prefix)/opt/nvm/nvm.sh"  # This loads nvm
+  [ -s "$(brew --prefix)/opt/nvm/etc/bash_completion.d/nvm" ] && \. "$(brew --prefix)/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
 fi
 
 

@@ -38,6 +38,7 @@ Plug 'ngmy/vim-rubocop'
 Plug 'tpope/vim-bundler'
 Plug 'tpope/vim-apathy'
 Plug 'mechatroner/rainbow_csv'
+Plug 'posva/vim-vue'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 " Colorschemes
@@ -154,6 +155,7 @@ let g:fzf_colors =
   \ 'spinner': ['fg', 'Label'],
   \ 'header':  ['fg', 'Comment'] }
 
+" autocmd FileType javascript JsPreTmpl
 
 " { CoC }
 " https://pragmaticpineapple.com/ultimate-vim-typescript-setup/
@@ -258,6 +260,9 @@ noremap <Leader>S :sp<Cr>:A<Cr><C-w>J
 
 " Copilot
 noremap <Leader>c :Copilot panel
+
+" Ripgrep
+noremap <Leader>r :Rg<Cr>
 
 "" {{{{ Functions }}}}
 command! DiffRuby vert new | set bt=nofile | set syntax=ruby | r ++edit # | 0d_
