@@ -18,24 +18,24 @@ endif
 call plug#begin('~/.vim/plugged')
 "feature extension
 Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-rhubarb' " provides :GBrowse
+Plug 'tpope/vim-bundler' " provides :Bundle open
 Plug 'tpope/vim-commentary'
-Plug 'tpope/vim-rhubarb'
 Plug 'tpope/vim-surround'
+Plug 'airblade/vim-gitgutter'
 Plug 'kana/vim-textobj-user'
-Plug 'kana/vim-textobj-entire'
-Plug 'coderifous/textobj-word-column.vim'
+Plug 'kana/vim-textobj-entire' " provides vie, vae, yie, etc.
+Plug 'coderifous/textobj-word-column.vim' " provides vic, vac, etc.
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 Plug 'itspriddle/vim-marked'
-Plug 'github/copilot.vim'
-" Plug 'janko-m/vim-test'
+" Plug 'github/copilot.vim'
 
 " languages
 Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-rails'
 Plug 'tpope/vim-rake'
-Plug 'ngmy/vim-rubocop'
-Plug 'tpope/vim-bundler'
+Plug 'ngmy/vim-rubocop' " provides :RuboCop
 Plug 'tpope/vim-apathy'
 Plug 'mechatroner/rainbow_csv'
 Plug 'posva/vim-vue'
@@ -89,7 +89,7 @@ endif
 
 " long line highlighting
 " highlight ColorColumn ctermbg=gray
-set colorcolumn=120
+set colorcolumn=80
 
 "" {{{{ Whitespace }}}}
 set autoindent                  " use indent from prev line when starting new line
@@ -214,17 +214,13 @@ noremap <Leader>w <C-w>
 noremap <Leader>e :e **/*
 noremap <Leader>h :cd ~/repos/<Cr>
 " noremap <Leader>p :cd %:p:h<Cr>
-noremap <Leader>r :s/:\(\w\+\)\(\s*\)=>\s*/\1:\2/g<Cr>
+" noremap <Leader>r :s/:\(\w\+\)\(\s*\)=>\s*/\1:\2/g<Cr>
+
 "copy and paste from keyboard
 noremap <Leader>y "+y
 noremap <Leader>p "+p
 noremap <Leader>P "+P
 noremap <Leader>v viw"0p
-
-" Vim Terminal
-" tnoremap <Esc> <C-W>N
-" tnoremap <C-W><Esc> <Esc>
-" set notimeout ttimeout timeoutlen=100
 
 " Scripts
 noremap gC :call ToggleVimrc()<Cr>
@@ -258,11 +254,12 @@ noremap <Leader>B :'<,'>GBrowse!<Cr>
 " Open alternate file in below split
 noremap <Leader>S :sp<Cr>:A<Cr><C-w>J
 
-" Copilot
-noremap <Leader>c :Copilot panel
+"Rubocop
+noremap <Leader>r :call RunCommandInDir('server', 'RuboCop', '')<Cr>
+noremap <Leader>R :call RunCommandInDir('server', 'RuboCop', '-a')<Cr>
 
-" Ripgrep
-noremap <Leader>r :Rg<Cr>
+" Copilot
+" noremap <Leader>c :Copilot panel
 
 "" {{{{ Functions }}}}
 command! DiffRuby vert new | set bt=nofile | set syntax=ruby | r ++edit # | 0d_
@@ -349,6 +346,15 @@ function! s:VSetSearch(cmdtype)
   norm! gv"sy
   let @/ = '\V' . substitute(escape(@s, a:cmdtype.'\'), '\n', '\\n', 'g')
   let @s = temp
+endfunction
+
+" Utility function to run commands in given directory
+function! RunCommandInDir(dir, command, args)
+  let old_dir = getcwd()
+  execute 'cd' a:dir
+  let full_command = a:command . (a:args != '' ? ' ' . a:args : '')
+  execute full_command
+  execute 'cd' old_dir
 endfunction
 
 "" {{{{ Plugin-specific settings }}}}
