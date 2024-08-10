@@ -78,9 +78,14 @@ set cmdheight=2
 set updatetime=300
 set shortmess+=c
 
+" have switchbuf use open files and open tabs
+set switchbuf=useopen,usetab
+
 " needed so vim gets the mouse in tmux
-set ttymouse=xterm2
-set mouse=a
+if !has('nvim')
+  set ttymouse=xterm2
+  set mouse=a
+endif
 
 " smart line joining in comments
 if v:version > 703 || v:version == 703 && has('patch541')
@@ -307,8 +312,8 @@ endfunction
 
 " switch to vimrc depending on context
 function! ToggleVimrc() 
-  let s:keep_sb = &switchbuf
-  set switchbuf=useopen,usetab
+  " let s:keep_sb = &switchbuf
+  " set switchbuf=useopen,usetab
 
   let buffernumber = bufnr("~/.vimrc") " -1 if doesn't exist
   let currenttab = tabpagenr() " store current buf as fallback
@@ -336,8 +341,8 @@ function! ToggleVimrc()
     e $MYVIMRC
   endif
 
-  let &switchbuf=s:keep_sb
-  unlet s:keep_sb
+  " let &switchbuf=s:keep_sb
+  " unlet s:keep_sb
 endfunction
 
 " Visual-Star

@@ -55,7 +55,7 @@ if [[ -n $SSH_CONNECTION ]]; then
 elif [[ -n $CODESPACES ]]; then
   export EDITOR='vim.tiny'
 else
-  export EDITOR='vim'
+  export EDITOR='nvim'
 fi
 
 ## Aliases
@@ -65,6 +65,16 @@ alias be='bundle exec'
 alias rake='noglob rake' # required for certain strap tasks
 alias linecount='tee >(wc -l | xargs echo)' # for piping ripgrep
 alias caff='caffdown 36000'
+alias baudit='bundle exec bundle-audit update && bundle exec bundle-audit check'
+alias vim='nvim'
+
+function n() {
+  nvim $1
+}
+
+function gcam() {
+  git commit -am $1
+}
 
 function git-log-clean() {
   local log=$(git --no-pager log --pretty="%s. %b" --author=luke.abel@simplethread.com --since=$1 --until=$2 --all --no-merges)
@@ -85,6 +95,12 @@ function git-echo-copy() {
 
 function gitToday() { git-echo-copy midnight }
 function gitYesterday() { git-echo-copy yesterday.midnight midnight }
+
+function timestamp () {
+  timestamp=$(date +'%Y%m%d%H%M%S')
+  echo $timestamp
+  echo $timestamp | pbcopy
+}
 
 ## Functions
 function rtest () {
@@ -133,6 +149,7 @@ function rgg() {
 }
 
 # match literal string for arg
+# useful for characters that bash wants to interpret
 function rgl() {
   rg -F $1 $2
 }
@@ -148,8 +165,14 @@ function rgr() {
   rg $1 --files-with-matches -0 | xargs -0 sed -i '' "s/$1/$2/g"
 }
 
+# count occurrences of arg
 function rgcount() {
   rg $1 | tee >(wc -l | xargs echo)
+}
+
+# search for an element by attribute key and/or value
+function rgelement() {
+  rg --multiline --multiline-dotall "<$1[^<]*$2[^<]*>"
 }
 
 # The following function runs the caffeinate command for a given number of seconds,
@@ -181,6 +204,13 @@ function caffdown() {
   trap - SIGINT SIGTERM EXIT
 }
 
+function profanno() {
+  local filepath="$1"
+  local filename=$(basename "$filepath")
+
+  be stackprof tmp/stackprof.dump --file "$filepath" > "tmp/$filename"
+}
+
 # retrieve and set environment variables in the MacOS Keychain
 function keychain-environment-variable () {
   security find-generic-password -w -a ${USER} -D "environment variable" -s "${1}"
@@ -207,3 +237,4 @@ if [ "$(uname -s)" = "Darwin" ]; then
 fi
 
 
+export PATH="$PATH:/Users/lukeabel/Repos/devops_utilities"
