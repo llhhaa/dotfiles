@@ -16,6 +16,7 @@ vim.g.maplocalleader = '\\' -- Same for `maplocalleader`
 
 local plugins_manifest = require('plugins_manifest')
 require('lazy').setup(plugins_manifest)
+require('gen_prompts') -- custom prompts for gen llm interface
 
 -- general settings
 vim.opt.number = true
@@ -46,6 +47,9 @@ vim.opt.backspace = { 'indent', 'eol', 'start' } -- backspace through everything
 -- TODO: check on this setting
 -- :set list will show all whitespace characters
 vim.opt.listchars = { tab = '>\\', trail = '-', extends = '>', precedes = '<', nbsp = '+' }
+
+
+vim.opt.iskeyword:append('?') -- include question marks in autocomplete
 
 -- statusline
 vim.opt.laststatus = 2                      -- always display statusline
@@ -88,16 +92,23 @@ end
 vim.api.nvim_set_option('guitablabel', '')                     -- clear for reload
 vim.api.nvim_set_option('guitablabel', '%{GuiTabLabel()}')
 
-vim.api.nvim_create_autocmd({'BufEnter', 'FocusGained'}, {
+-- prompt if file is changed
+vim.api.nvim_create_autocmd({'BufEnter', 'BufWinEnter', 'FocusGained'}, {
   pattern = '*',
   command = 'checktime'
 })
 
+-- make markdown files more readable
+vim.api.nvim_create_autocmd({'BufEnter', 'BufWinEnter'}, {
+  pattern = {'*.md', '*.markdown'},
+  command = 'set wrap'
+})
+
 -- mappings
-vim.keymap.set('n', '<Leader>w', '<C-w>')
-vim.keymap.set('n', '<Leader>y', '"+y')
-vim.keymap.set('n', '<Leader>p', '"+p')
-vim.keymap.set('n', '<Leader>P', '"+P')
+vim.keymap.set({'n', 'v'}, '<Leader>w', '<C-w>')
+vim.keymap.set({'n', 'v'}, '<Leader>y', '"+y')
+vim.keymap.set({'n', 'v'}, '<Leader>p', '"+p')
+vim.keymap.set({'n', 'v'}, '<Leader>P', '"+P')
 vim.keymap.set('n', '<Leader>v', 'viw"0p')
 
 vim.keymap.set('n', '<Leader>f', ':GFiles<Cr>')
@@ -113,10 +124,16 @@ vim.keymap.set('n', '<Leader>l', ':grep<space><C-r><C-w><Cr> :copen<Cr>')
 vim.keymap.set('n', '<Leader>L', ':tabnew +grep<space><C-r><C-w><Cr> :copen<Cr>')
 
 -- Go to file line in GitHub
-vim.keymap.set('n', '<Leader>B', ":'<,'>GBrowse!<Cr>")
+vim.keymap.set({'n', 'v'}, '<Leader>B', ":'<,'>GBrowse!<Cr>")
 
 -- Open alternate file in below split
 vim.keymap.set('n', '<Leader>S', ':sp<Cr>:A<Cr><C-w>J')
+
+-- yank filename
+vim.keymap.set('n', '<leader>yf', function()
+  vim.cmd('let @+ = expand("%")')
+  vim.cmd('echo "File path copied to clipboard"')
+end)
 
 -- Below is a function to run a command in given directory, followed by two keymappings that use
 -- that function. If the keymappings were adapted from Vimscript, and they were found incorrect,
