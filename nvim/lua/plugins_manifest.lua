@@ -1,3 +1,5 @@
+local response_format = "Do not offer explanations or commentary. Respond EXACTLY and ONLY in this format:\n```$ftype\n<your code>\n```"
+
 return {
   {
     'romainl/apprentice',
@@ -12,7 +14,7 @@ return {
   'tpope/vim-rhubarb', -- provides :GBrowse
   {
     'kana/vim-textobj-user',
-    priority = 999, -- make 
+    priority = 999, -- make sure this gets loaded before other plugins that rely on it
     lazy = false -- eager load so vim-textobj-entire works
   },
   'kana/vim-textobj-entire', -- provides vie, vae, yie, etc.
@@ -24,21 +26,23 @@ return {
   'tpope/vim-rails',
   'tpope/vim-bundler', -- provides :Bundle open
   'tpope/vim-rake',
-  'ngmy/vim-rubocop', -- provides :RuboCop
+  -- 'ngmy/vim-rubocop', -- provides :RuboCop
   'tpope/vim-apathy',
-  'mechatroner/rainbow_csv',
-  'greggh/claude-code.nvim',
-  dependencies = {
-    "nvim-lua/plenary.nvim", -- Required for git operations
-  },
-  config = function()
-    require("claude-code").setup()
-  end
+  -- 'mechatroner/rainbow_csv',
   -- 'posva/vim-vue',
+  {
+    'greggh/claude-code.nvim',
+    dependencies = {
+      "nvim-lua/plenary.nvim", -- Required for git operations
+    },
+    config = function()
+      require("claude-code").setup()
+    end
+  },
   {
     "David-Kunz/gen.nvim",
     opts = {
-        model = "deepseek-coder:33b", -- The default model to use.
+        model = "deepseek-coder-v2", -- The default model to use.
         host = "localhost", -- The host running the Ollama service.
         port = "11434", -- The port on which the Ollama service is listening.
         quit_map = "q", -- set keymap for close the response window
@@ -60,5 +64,57 @@ return {
         no_auto_close = false, -- Never closes the window automatically.
         debug = false -- Prints errors and the command which is run.
     }
-  }
+  },
+  -- {
+  --   "nomnivore/ollama.nvim",
+  --   dependencies = {
+  --     "nvim-lua/plenary.nvim",
+  --   },
+  --
+  --   -- All the user commands added by the plugin
+  --   cmd = { "Ollama", "OllamaModel", "OllamaServe", "OllamaServeStop" },
+  --
+  --   keys = {
+  --     -- Sample keybind for prompt menu. Note that the <c-u> is important for selections to work properly.
+  --     {
+  --       "<leader>oo",
+  --       ":<c-u>lua require('ollama').prompt()<cr>",
+  --       desc = "ollama prompt",
+  --       mode = { "n", "v" },
+  --     },
+  --
+  --     -- Sample keybind for direct prompting. Note that the <c-u> is important for selections to work properly.
+  --     {
+  --       "<leader>oG",
+  --       ":<c-u>lua require('ollama').prompt('Generate_Code')<cr>",
+  --       desc = "ollama Generate Code",
+  --       mode = { "n", "v" },
+  --     },
+  --     {
+  --       "<leader>oC",
+  --       ":<c-u>lua require('ollama').prompt('Complete_Code')<cr>",
+  --       desc = "ollama Complete Code",
+  --       mode = { "n", "v" },
+  --     },
+  --   },
+  --
+  --   ---@type Ollama.Config
+  --   opts = {
+  --     model = "deepseek-coder-v2",
+  --     prompts = {
+  --       Complete_Code = {
+  --         prompt = "Modify or complete the following $ftype code according to any instructions given through comments in the code. "
+  --                 .. response_format
+  --                 .. "\n\n```$ftype\n$sel\n```",
+  --         action = "replace",
+  --       },
+  --       Complete_Code_Debug = {
+  --         prompt = "Modify or complete the following $ftype code according to any instructions given through comments in the code. "
+  --                 .. response_format
+  --                 .. "\n\n```$ftype\n$sel\n```",
+  --         action = "display",
+  --       }
+  --     }
+  --   }
+  -- }
 }

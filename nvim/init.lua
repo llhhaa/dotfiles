@@ -62,35 +62,35 @@ vim.opt.statusline:append(' %#warningmsg#') -- highlight switch
 vim.opt.statusline:append(' %*')            -- highlight exit
 
 -- guitabline
-local function GuiTabLabel()
-  -- TODO: learn Lua and make sure this is well-factored
-  local label = ''
-  local bufnrlist = vim.api.nvim_tabpage_list_bufs(0) -- tabpagebuflist in Neovim API
-
-   -- Add '+' if one of the buffers in the tab page is modified
-  for _, bufnr in ipairs(bufnrlist) do
-    local buf = vim.api.nvim_get_current_win() or 0
-    if vim.api.nvim_buf_get_option(buf, "modified") then
-      label = '+'
-      break
-    end
-  end
-
-   -- Append the number of windows in the tab page if more than one
-  local wincount = vim.api.nvim_tabpage_get_win_count(0) or 0
-  if wincount > 1 then
-    label = label .. wincount
-  end
-  if label ~= '' then
-    label = label .. ' '
-  end
-
-   -- Append the buffer name
-  local bufname = vim.api.nvim_buf_get_name(bufnrlist[#bufnrlist]) or ''
-  return label .. bufname
-end
-vim.api.nvim_set_option('guitablabel', '')                     -- clear for reload
-vim.api.nvim_set_option('guitablabel', '%{GuiTabLabel()}')
+-- local function GuiTabLabel()
+--   -- TODO: learn Lua and make sure this is well-factored
+--   local label = ''
+--   local bufnrlist = vim.api.nvim_tabpage_list_bufs(0) -- tabpagebuflist in Neovim API
+--
+--    -- Add '+' if one of the buffers in the tab page is modified
+--   for _, bufnr in ipairs(bufnrlist) do
+--     local buf = vim.api.nvim_get_current_win() or 0
+--     if vim.api.nvim_buf_get_option(buf, "modified") then
+--       label = '+'
+--       break
+--     end
+--   end
+--
+--    -- Append the number of windows in the tab page if more than one
+--   local wincount = vim.api.nvim_tabpage_get_win_count(0) or 0
+--   if wincount > 1 then
+--     label = label .. wincount
+--   end
+--   if label ~= '' then
+--     label = label .. ' '
+--   end
+--
+--    -- Append the buffer name
+--   local bufname = vim.api.nvim_buf_get_name(bufnrlist[#bufnrlist]) or ''
+--   return label .. bufname
+-- end
+-- vim.api.nvim_set_option('guitablabel', '')                     -- clear for reload
+-- vim.api.nvim_set_option('guitablabel', '%{GuiTabLabel()}')
 
 -- prompt if file is changed
 vim.api.nvim_create_autocmd({'BufEnter', 'BufWinEnter', 'FocusGained'}, {
@@ -135,6 +135,10 @@ vim.keymap.set('n', '<leader>yf', function()
   vim.cmd('echo "File path copied to clipboard"')
 end)
 
+-- commands
+vim.keymap.set('ia', 'def@', 'def<CR>end<Up>')
+vim.keymap.set('ia', 'info@', 'Rails.logger.info()<Left>')
+
 -- Below is a function to run a command in given directory, followed by two keymappings that use
 -- that function. If the keymappings were adapted from Vimscript, and they were found incorrect,
 -- they are updated so they will correctly call the function with the intended arguments.
@@ -150,8 +154,8 @@ local RunCommandInDir = function(dir, command, args)
   vim.cmd('cd ' .. old_dir)  -- go back to previous working directory
 end
 
-vim.keymap.set('n', '<Leader>r', function() RunCommandInDir('server', 'RuboCop', '') end, { silent = true })
-vim.keymap.set('n', '<Leader>R', function() RunCommandInDir('server', 'RuboCop', '-a') end, { silent = true })
+-- vim.keymap.set('n', '<Leader>r', function() RunCommandInDir('server', 'RuboCop', '') end, { silent = true })
+-- vim.keymap.set('n', '<Leader>R', function() RunCommandInDir('server', 'RuboCop', '-a') end, { silent = true })
 
 if vim.fn.executable('rg') == 1 then
   vim.o.grepprg = 'rg --vimgrep --no-heading --smart-case --ignore-file ~/.rgignore'
