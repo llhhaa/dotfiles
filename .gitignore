@@ -19,3 +19,5 @@ codeintel
 
 # Ruby specific files
 gemrc
+.irb_history
+.irbrc-local.rb

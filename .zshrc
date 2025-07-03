@@ -7,7 +7,7 @@ HIST_STAMPS="dd.mm.yyyy"
 COMPLETION_WAITING_DOTS="true"
 
 # add plugins to ~/.oh-my-zsh/custom/plugins/
-plugins=(git)
+plugins=(git z)
 source $ZSH/oh-my-zsh.sh
 
 # initialize homebrew
@@ -103,46 +103,6 @@ function timestamp () {
 }
 
 ## Functions
-function rtest () {
-  if ! [[ -z "$2" ]]; then
-    ruby -I test $1 -n "/$2/"
-  else
-    ruby -I test $1
-  fi
-}
-
-function runtest () {
-  if ! [[ -z "$2" ]]; then
-    bin/run ruby -I test $1 -n "/$2/"
-  else
-    bin/run ruby -I test $1
-  fi
-}
-
-# get running pods whose name includes a substring
-# param1: namespace
-# param2: pod name substring
-function kpods () {
-  kubectl get pods -n $1 | rg -oP "$2\S*(?=\s+\d+\/\d+\s+Running)"
-}
-
-# log into a pod of the given name
-# param1: namespace
-# param2: pod name
-function kshell () {
-  ContainerType=$(echo "$2" | rg -oP ".*(?=(-[^a-z][a-z0-9]*){2})")
-  kubectl -n $1 -c "$ContainerType" exec -it "$2" -- /bin/bash
-}
-
-# log into the first running pod whose name includes a substring
-# param1: namespace
-# param2: pod name substring
-function kshellfirst () {
-  ContainerName=$(kpods $1 $2 | head -n1)
-  ContainerType=$(echo "$ContainerName" | rg -oP ".*(?=(-[^a-z][a-z0-9]*){2})")
-  kubectl -n $1 -c "$ContainerType" exec -it "$ContainerName" -- /bin/bash
-}
-
 # find filenames that look like arg
 function rgg() {
   rg --iglob "*$1*" -g '!/Library/' --files
@@ -209,6 +169,82 @@ function profanno() {
   local filename=$(basename "$filepath")
 
   be stackprof tmp/stackprof.dump --file "$filepath" > "tmp/$filename"
+}
+
+# Function to check out latest release canddiate branch
+function gcol() {
+  # fetch to make sure we have the latest branches
+  git fetch
+
+  # Get all branches matching the release candidate pattern
+  branches=$(git branch -a | grep 'remotes/origin/v[0-9]*\.[0-9]*\(\.[0-9]*\)\?-candidate' | sed 's/.*remotes\/origin\///')
+
+  # Initialize variables to store the latest version and branch
+  latest_version="0.0.0"
+  latest_branch=""
+
+  # Iterate through the branches
+  while IFS= read -r branch; do
+    # Extract the version number from the branch name
+    version=$(echo "$branch" | sed -E 's/.*v([0-9]+\.[0-9]+(\.[0-9]+)?)-candidate/\1/')
+
+    # Compare the version with the current latest version
+    if [[ "$version" > "$latest_version" ]]; then
+      latest_version="$version"
+      latest_branch="$branch"
+    fi
+  done <<< "$branches"
+
+  # Check out the latest release candidate branch
+  if [[ -n "$latest_branch" ]]; then
+    git checkout "$latest_branch"
+
+    # Check for updates and pull if needed
+    git fetch origin "$latest_branch"
+    if [[ $(git rev-parse HEAD) != $(git rev-parse origin/"$latest_branch") ]]; then
+      echo "Updates found. Pulling latest changes..."
+      git pull origin "$latest_branch"
+    fi
+  else
+    echo "No release candidate branches found."
+  fi
+}
+
+# Function to create and open a timestamped scratch file
+function makescratch() {
+  # Check if a name was provided
+  if [[ -z "$1" ]]; then
+    echo "Error: Please provide a name for the scratch file."
+    echo "Usage: makescratch <name>"
+    return 1
+  fi
+
+  # Get the current timestamp in YYYYMMDD_HHMMSS format
+  local timestamp=$(date +"%Y%m%d_%H%M%S")
+
+  # Find the project root (assuming it's a git repository)
+  local project_root=$(git rev-parse --show-toplevel 2>/dev/null)
+
+  if [[ -z "$project_root" ]]; then
+    echo "Error: Not in a git repository."
+    return 1
+  fi
+
+  # Create the scratch directory if it doesn't exist
+  local scratch_dir="${project_root}/scratch"
+  mkdir -p "$scratch_dir"
+
+  # Create the scratch file with the given name and timestamp
+  local filename="${1}_${timestamp}.rb"
+  local filepath="${scratch_dir}/${filename}"
+
+  # Add a header comment to the file
+  echo "# Scratch file: ${filename}" > "$filepath"
+  echo "# Created: $(date)" >> "$filepath"
+  echo "" >> "$filepath"
+
+  # Open the file in Neovim
+  nvim "$filepath"
 }
 
 # retrieve and set environment variables in the MacOS Keychain
