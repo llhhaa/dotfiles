@@ -104,6 +104,13 @@ vim.api.nvim_create_autocmd({'BufEnter', 'BufWinEnter'}, {
   command = 'set wrap'
 })
 
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'vue',
+  callback = function()
+    vim.bo.commentstring = '// %s'
+  end
+})
+
 -- mappings
 vim.keymap.set({'n', 'v'}, '<Leader>w', '<C-w>')
 vim.keymap.set({'n', 'v'}, '<Leader>y', '"+y')
@@ -122,6 +129,19 @@ vim.keymap.set('n', '<Leader>G', ':tabnew +grep <C-r><C-w><Cr> :copen<Cr>')
 -- Grep word under cursor
 vim.keymap.set('n', '<Leader>l', ':grep<space><C-r><C-w><Cr> :copen<Cr>')
 vim.keymap.set('n', '<Leader>L', ':tabnew +grep<space><C-r><C-w><Cr> :copen<Cr>')
+
+-- Grep literal (no regex interpretation)
+vim.api.nvim_create_user_command('Grepl', function(opts)
+  vim.cmd('grep --fixed-strings ' .. vim.fn.shellescape(opts.args))
+  vim.cmd('copen')
+end, { nargs = '+', desc = 'Grep literal string (no regex)' })
+
+vim.keymap.set('v', '<Leader>gl', function()
+  vim.cmd('normal! "zy')
+  local selection = vim.fn.getreg('z')
+  vim.cmd('grep --fixed-strings ' .. vim.fn.shellescape(selection))
+  vim.cmd('copen')
+end, { desc = 'Grep literal visual selection' })
 
 -- Go to file line in GitHub
 vim.keymap.set({'n', 'v'}, '<Leader>B', ":'<,'>GBrowse!<Cr>")
