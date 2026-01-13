@@ -44,6 +44,14 @@ export CPPFLAGS="-I$(brew --prefix)/opt/libpq/include"
 export LDFLAGS="-L$(brew --prefix)/opt/libpq/lib"
 export PKG_CONFIG_PATH="$(brew --prefix)/opt/libpq/lib/pkgconfig"
 
+# Force use of OpenSSL 3.5
+export PATH="/opt/homebrew/opt/openssl@3.5/bin:$PATH"
+export LDFLAGS="-L/opt/homebrew/opt/openssl@3/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/openssl@3/include"
+export PKG_CONFIG_PATH="/opt/homebrew/opt/openssl@3/lib/pkgconfig"
+# For Ruby specifically
+export RUBY_CONFIGURE_OPTS="--with-openssl-dir=/opt/homebrew/opt/openssl@3"
+
 ## Other Variables
 export LANG=en_US.UTF-8
 export RIPGREP_CONFIG_PATH=~/.ripgreprc
@@ -274,3 +282,5 @@ fi
 
 
 export PATH="$PATH:/Users/lukeabel/Repos/devops_utilities"
+alias devops='RBENV_VERSION=3.3.10 devops'
+export PATH="$HOME/.local/bin:$PATH"

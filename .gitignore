@@ -5,6 +5,7 @@ bash_history
 # OSX specific files
 *.swp
 .DS_Store
+/.DS_Store
 
 # Project specific files
 /tmp/
