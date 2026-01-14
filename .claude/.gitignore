@@ -1,0 +1,17 @@
+# Runtime/cache directories
+cache/
+debug/
+downloads/
+file-history/
+plans/
+plugins/
+projects/
+session-env/
+shell-snapshots/
+statsig/
+telemetry/
+todos/
+
+# Runtime files
+history.jsonl
+stats-cache.json

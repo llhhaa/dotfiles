@@ -69,6 +69,9 @@ echo "         (includes nvim/init.lua, nvim/lua/plugins_manifest.lua, nvim/lua/
 # Kitty
 link_file "$DOTFILES_DIR/kitty.conf" "$HOME/.config/kitty/kitty.conf"
 
+# Claude Code (includes settings.json and scripts/)
+link_file "$DOTFILES_DIR/.claude" "$HOME/.claude"
+
 # Optional: Alacritty (uncomment if using)
 # link_file "$DOTFILES_DIR/.alacritty.yml" "$HOME/.alacritty.yml"
 
