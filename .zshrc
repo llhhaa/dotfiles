@@ -220,55 +220,63 @@ function gcol() {
 
 # Display Neovim configuration cheatsheet
 function nvim-cheat() {
-  cat << 'EOF'
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║                                VIM CHEATSHEET                                 ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
+  local R='\033[0m'       # Reset
+  local B='\033[1m'       # Bold
+  local C='\033[36m'      # Cyan
+  local Y='\033[33m'      # Yellow
+  local G='\033[32m'      # Green
+  local M='\033[35m'      # Magenta
+  local D='\033[2m'       # Dim
 
-─── FILE NAVIGATION (FZF) ──────────────────────────────────────────────────────
-  <Space>f    Git files (:GFiles)
-  <Space>F    All files (:Files)
-  <Space>b    Buffers
-  <Space>h    File history
-
-─── CLIPBOARD ──────────────────────────────────────────────────────────────────
-  <Space>y    Yank to system clipboard
-  <Space>p/P  Paste/paste before from clipboard
-  <Space>v    Replace word with reg 0
-  <Space>yf   Yank filename
-
-─── SEARCH / GREP ──────────────────────────────────────────────────────────────
-  <Space>g    Grep word under cursor
-  <Space>G    Grep in new tab
-  <Space>l    Literal grep
-  <Space>gl   Grep visual selection (visual)
-
-─── GIT / GITHUB ───────────────────────────────────────────────────────────────
-  <Space>B    Open file on GitHub (:GBrowse!)
-
-─── WINDOW / SPLITS ────────────────────────────────────────────────────────────
-  <Space>w    Window commands (<C-w>)
-  <Space>S    Alternate file in split
-
-─── TEXT OBJECTS ───────────────────────────────────────────────────────────────
-  vie / vae / yie   Entire file
-  vic / vac         Word column
-
-─── INSERT MODE ────────────────────────────────────────────────────────────────
-  def@      → def\nend
-  info@       → Rails.logger.info()
-
-─── PLUGINS ────────────────────────────────────────────────────────────────────
-  vim-fugitive      Git integration         vim-rhubarb       GitHub :GBrowse
-  fzf.vim           Fuzzy finder            vim-marked        Markdown preview
-  vim-rails         Rails support           vim-bundler       :Bundle open
-  vim-textobj-*     Text objects            claude-code.nvim  Claude AI
-  gen.nvim          LLM (Ollama)
-
-─── SETTINGS ───────────────────────────────────────────────────────────────────
-  Line numbers: ON    Indent: 2 spaces    Color column: 80
-  Search: smart-case  Scrolloff: 2 lines  Colorscheme: apprentice
-EOF
+  echo ""
+  echo -e "${C}${B}╔═══════════════════════════════════════════════════════════════════════════════╗${R}"
+  echo -e "${C}${B}║                                VIM CHEATSHEET                                 ║${R}"
+  echo -e "${C}${B}╚═══════════════════════════════════════════════════════════════════════════════╝${R}"
+  echo ""
+  echo -e "${Y}${B}─── FILE NAVIGATION (FZF) ──────────────────────────────────────────────────────${R}"
+  echo -e "  ${G}<Space>f${R}    Git files (:GFiles)"
+  echo -e "  ${G}<Space>F${R}    All files (:Files)"
+  echo -e "  ${G}<Space>b${R}    Buffers"
+  echo -e "  ${G}<Space>h${R}    File history"
+  echo ""
+  echo -e "${Y}${B}─── CLIPBOARD ──────────────────────────────────────────────────────────────────${R}"
+  echo -e "  ${G}<Space>y${R}    Yank to system clipboard"
+  echo -e "  ${G}<Space>p/P${R}  Paste/paste before from clipboard"
+  echo -e "  ${G}<Space>v${R}    Replace word with reg 0"
+  echo -e "  ${G}<Space>yf${R}   Yank filename"
+  echo ""
+  echo -e "${Y}${B}─── SEARCH / GREP ──────────────────────────────────────────────────────────────${R}"
+  echo -e "  ${G}<Space>g${R}    Grep word under cursor"
+  echo -e "  ${G}<Space>G${R}    Grep in new tab"
+  echo -e "  ${G}<Space>l${R}    Literal grep"
+  echo -e "  ${G}<Space>gl${R}   Grep visual selection ${D}(visual)${R}"
+  echo ""
+  echo -e "${Y}${B}─── GIT / GITHUB ───────────────────────────────────────────────────────────────${R}"
+  echo -e "  ${G}<Space>B${R}    Open file on GitHub (:GBrowse!)"
+  echo ""
+  echo -e "${Y}${B}─── WINDOW / SPLITS ────────────────────────────────────────────────────────────${R}"
+  echo -e "  ${G}<Space>w${R}    Window commands (<C-w>)"
+  echo -e "  ${G}<Space>S${R}    Alternate file in split"
+  echo ""
+  echo -e "${Y}${B}─── TEXT OBJECTS ───────────────────────────────────────────────────────────────${R}"
+  echo -e "  ${G}vie / vae / yie${R}   Entire file"
+  echo -e "  ${G}vic / vac${R}         Word column"
+  echo ""
+  echo -e "${Y}${B}─── INSERT MODE ────────────────────────────────────────────────────────────────${R}"
+  echo -e "  ${G}def@${R}      → def...end"
+  echo -e "  ${G}info@${R}     → Rails.logger.info()"
+  echo ""
+  echo -e "${Y}${B}─── PLUGINS ────────────────────────────────────────────────────────────────────${R}"
+  echo -e "  ${M}vim-fugitive${R}      Git integration         ${M}vim-rhubarb${R}       GitHub :GBrowse"
+  echo -e "  ${M}fzf.vim${R}           Fuzzy finder            ${M}vim-marked${R}        Markdown preview"
+  echo -e "  ${M}vim-rails${R}         Rails support           ${M}vim-bundler${R}       :Bundle open"
+  echo -e "  ${M}vim-textobj-*${R}     Text objects            ${M}claude-code.nvim${R}  Claude AI"
+  echo -e "  ${M}gen.nvim${R}          LLM (Ollama)"
+  echo ""
+  echo -e "${Y}${B}─── SETTINGS ───────────────────────────────────────────────────────────────────${R}"
+  echo -e "  Line numbers: ${C}ON${R}    Indent: ${C}2 spaces${R}    Color column: ${C}80${R}"
+  echo -e "  Search: ${C}smart-case${R}  Scrolloff: ${C}2 lines${R}  Colorscheme: ${C}apprentice${R}"
+  echo ""
 }
 
 # Function to create and open a timestamped scratch file
