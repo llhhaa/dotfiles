@@ -218,6 +218,59 @@ function gcol() {
   fi
 }
 
+# Display Neovim configuration cheatsheet
+function nvim-cheat() {
+  cat << 'EOF'
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                                VIM CHEATSHEET                                 ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+─── FILE NAVIGATION (FZF) ──────────────────────────────────────────────────────
+  <Space>f    Git files (:GFiles)
+  <Space>F    All files (:Files)
+  <Space>b    Buffers
+  <Space>h    File history
+
+─── CLIPBOARD ──────────────────────────────────────────────────────────────────
+  <Space>y    Yank to system clipboard
+  <Space>p/P  Paste/paste before from clipboard
+  <Space>v    Replace word with reg 0
+  <Space>yf   Yank filename
+
+─── SEARCH / GREP ──────────────────────────────────────────────────────────────
+  <Space>g    Grep word under cursor
+  <Space>G    Grep in new tab
+  <Space>l    Literal grep
+  <Space>gl   Grep visual selection (visual)
+
+─── GIT / GITHUB ───────────────────────────────────────────────────────────────
+  <Space>B    Open file on GitHub (:GBrowse!)
+
+─── WINDOW / SPLITS ────────────────────────────────────────────────────────────
+  <Space>w    Window commands (<C-w>)
+  <Space>S    Alternate file in split
+
+─── TEXT OBJECTS ───────────────────────────────────────────────────────────────
+  vie / vae / yie   Entire file
+  vic / vac         Word column
+
+─── INSERT MODE ────────────────────────────────────────────────────────────────
+  def@      → def\nend
+  info@       → Rails.logger.info()
+
+─── PLUGINS ────────────────────────────────────────────────────────────────────
+  vim-fugitive      Git integration         vim-rhubarb       GitHub :GBrowse
+  fzf.vim           Fuzzy finder            vim-marked        Markdown preview
+  vim-rails         Rails support           vim-bundler       :Bundle open
+  vim-textobj-*     Text objects            claude-code.nvim  Claude AI
+  gen.nvim          LLM (Ollama)
+
+─── SETTINGS ───────────────────────────────────────────────────────────────────
+  Line numbers: ON    Indent: 2 spaces    Color column: 80
+  Search: smart-case  Scrolloff: 2 lines  Colorscheme: apprentice
+EOF
+}
+
 # Function to create and open a timestamped scratch file
 function makescratch() {
   # Check if a name was provided
