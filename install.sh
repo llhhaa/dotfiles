@@ -65,6 +65,7 @@ link_file "$DOTFILES_DIR/.ripgreprc" "$HOME/.ripgreprc"
 # Neovim (includes init.lua and lua/ configs)
 link_file "$DOTFILES_DIR/nvim" "$HOME/.config/nvim"
 echo "         (includes nvim/init.lua, nvim/lua/plugins_manifest.lua, nvim/lua/gen_prompts.lua)"
+link_file "$DOTFILES_DIR/vim-cheatsheet.yaml" "$HOME/.config/vim-cheatsheet.yaml"
 
 # Kitty
 link_file "$DOTFILES_DIR/kitty.conf" "$HOME/.config/kitty/kitty.conf"

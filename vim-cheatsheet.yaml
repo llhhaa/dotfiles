@@ -1,0 +1,107 @@
+title: VIM CHEATSHEET
+
+sections:
+  - name: FILE NAVIGATION (FZF)
+    entries:
+      - key: "<Space>f"
+        desc: "Git files (:GFiles)"
+      - key: "<Space>F"
+        desc: "All files (:Files)"
+      - key: "<Space>b"
+        desc: "Buffers"
+      - key: "<Space>h"
+        desc: "File history"
+
+  - name: CLIPBOARD
+    entries:
+      - key: "<Space>y"
+        desc: "Yank to system clipboard"
+      - key: "<Space>p/P"
+        desc: "Paste/paste before from clipboard"
+      - key: "<Space>v"
+        desc: "Replace word with reg 0"
+      - key: "<Space>yf"
+        desc: "Yank filename"
+
+  - name: SEARCH / GREP
+    entries:
+      - key: "<Space>g"
+        desc: "Grep word under cursor"
+      - key: "<Space>G"
+        desc: "Grep in new tab"
+      - key: "<Space>l"
+        desc: "Literal grep"
+      - key: "<Space>gl"
+        desc: "Grep visual selection"
+        note: "(visual)"
+
+  - name: GIT / GITHUB
+    entries:
+      - key: "<Space>B"
+        desc: "Open file on GitHub (:GBrowse!)"
+
+  - name: WINDOW / SPLITS
+    entries:
+      - key: "<Space>w"
+        desc: "Window commands (<C-w>)"
+      - key: "<Space>S"
+        desc: "Alternate file in split"
+
+  - name: TEXT OBJECTS
+    entries:
+      - key: "vie / vae / yie"
+        desc: "Entire file"
+      - key: "vic / vac"
+        desc: "Word column"
+
+  - name: INSERT MODE
+    entries:
+      - key: "def@"
+        desc: "def...end"
+        arrow: true
+      - key: "info@"
+        desc: "Rails.logger.info()"
+        arrow: true
+
+  - name: HELP
+    entries:
+      - key: "<Space>?"
+        desc: "Open this cheatsheet"
+
+  - name: PLUGINS
+    type: plugins
+    entries:
+      - name: "vim-fugitive"
+        desc: "Git integration"
+      - name: "vim-rhubarb"
+        desc: "GitHub :GBrowse"
+      - name: "fzf.vim"
+        desc: "Fuzzy finder"
+      - name: "vim-marked"
+        desc: "Markdown preview"
+      - name: "vim-rails"
+        desc: "Rails support"
+      - name: "vim-bundler"
+        desc: ":Bundle open"
+      - name: "vim-textobj-*"
+        desc: "Text objects"
+      - name: "claude-code.nvim"
+        desc: "Claude AI"
+      - name: "gen.nvim"
+        desc: "LLM (Ollama)"
+
+  - name: SETTINGS
+    type: settings
+    entries:
+      - label: "Line numbers"
+        value: "ON"
+      - label: "Indent"
+        value: "2 spaces"
+      - label: "Color column"
+        value: "80"
+      - label: "Search"
+        value: "smart-case"
+      - label: "Scrolloff"
+        value: "2 lines"
+      - label: "Colorscheme"
+        value: "apprentice"

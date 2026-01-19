@@ -17,6 +17,7 @@ vim.g.maplocalleader = '\\' -- Same for `maplocalleader`
 local plugins_manifest = require('plugins_manifest')
 require('lazy').setup(plugins_manifest)
 require('gen_prompts') -- custom prompts for gen llm interface
+require('cheatsheet')  -- vim cheatsheet floating window
 
 -- general settings
 vim.opt.number = true
@@ -117,6 +118,8 @@ vim.keymap.set({'n', 'v'}, '<Leader>y', '"+y')
 vim.keymap.set({'n', 'v'}, '<Leader>p', '"+p')
 vim.keymap.set({'n', 'v'}, '<Leader>P', '"+P')
 vim.keymap.set('n', '<Leader>v', 'viw"0p')
+
+vim.keymap.set('n', '<Leader>?', require('cheatsheet').open, { desc = 'Open cheatsheet' })
 
 vim.keymap.set('n', '<Leader>f', ':GFiles<Cr>')
 vim.keymap.set('n', '<Leader>F', ':Files<Cr>')
