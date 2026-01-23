@@ -46,11 +46,7 @@ local function find_cheatsheet(data, id)
   return nil
 end
 
--- Build content lines from cheatsheet data
-local function build_content(cheatsheet)
-  local lines = {}
-  local highlights = {} -- { line_num, hl_group, col_start, col_end }
-
+local function build_header(cheatsheet, lines, highlights)
   -- Header
   local title = cheatsheet.title or 'CHEATSHEET'
   local header_line = string.format('║%s║',
@@ -68,6 +64,14 @@ local function build_content(cheatsheet)
   table.insert(highlights, { #lines, 'CheatHeader', 0, -1 })
 
   table.insert(lines, '')
+end
+
+-- Build content lines from cheatsheet data
+local function build_content(cheatsheet)
+  local lines = {}
+  local highlights = {} -- { line_num, hl_group, col_start, col_end }
+
+  build_header(cheatsheet, lines, highlights)
 
   -- Sections
   for _, section in ipairs(cheatsheet.sections) do
@@ -182,33 +186,7 @@ local function apply_highlights(buf, highlights)
   end
 end
 
-function M.open(id)
-  setup_highlights()
-
-  local data, err = parse_config(config_path)
-  if not data or not data.cheatsheets then
-    vim.notify('Cheatsheet: ' .. (err or 'Unknown error'), vim.log.levels.ERROR)
-    return
-  end
-
-  -- Default to first cheatsheet if no id provided
-  local cheatsheet
-  if id and id ~= '' then
-    cheatsheet = find_cheatsheet(data, id)
-    if not cheatsheet then
-      vim.notify('Cheatsheet: No cheatsheet found with id "' .. id .. '"', vim.log.levels.ERROR)
-      return
-    end
-  else
-    cheatsheet = data.cheatsheets[1]
-    if not cheatsheet then
-      vim.notify('Cheatsheet: No cheatsheets defined', vim.log.levels.ERROR)
-      return
-    end
-  end
-
-  local lines, highlights = build_content(cheatsheet)
-
+local function create_window(lines, highlights)
   -- Calculate window size
   local height = #lines
   local ui = vim.api.nvim_list_uis()[1]
@@ -256,6 +234,37 @@ function M.open(id)
   vim.api.nvim_buf_set_keymap(buf, 'n', 'n', 'n', { noremap = true })
   vim.api.nvim_buf_set_keymap(buf, 'n', 'N', 'N', { noremap = true })
 end
+
+function M.open(id)
+  setup_highlights()
+
+  local data, err = parse_config(config_path)
+  if not data or not data.cheatsheets then
+    vim.notify('Cheatsheet: ' .. (err or 'Unknown error'), vim.log.levels.ERROR)
+    return
+  end
+
+  -- Default to first cheatsheet if no id provided
+  local cheatsheet
+  if id and id ~= '' then
+    cheatsheet = find_cheatsheet(data, id)
+    if not cheatsheet then
+      vim.notify('Cheatsheet: No cheatsheet found with id "' .. id .. '"', vim.log.levels.ERROR)
+      return
+    end
+  else
+    cheatsheet = data.cheatsheets[1]
+    if not cheatsheet then
+      vim.notify('Cheatsheet: No cheatsheets defined', vim.log.levels.ERROR)
+      return
+    end
+  end
+
+  local lines, highlights = build_content(cheatsheet)
+
+  create_window(lines, highlights);
+end
+
 
 -- Tab completion for cheatsheet IDs
 local function complete_cheatsheet(arg_lead, _, _)
