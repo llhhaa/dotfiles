@@ -6,6 +6,38 @@ local yaml = require('tinyyaml')
 local WIDTH = 81
 local config_path = vim.fn.expand('~/.config/vim-cheatsheet.yaml')
 
+-- Buffer: manages lines and highlights together
+local Buffer = {}
+Buffer.__index = Buffer
+
+function Buffer:new()
+  return setmetatable({ lines = {}, highlights = {} }, Buffer)
+end
+
+-- Add a line, optionally highlighting the whole line
+function Buffer:add(text, hl_group)
+  table.insert(self.lines, text)
+  if hl_group then
+    table.insert(self.highlights, { #self.lines, hl_group, 0, -1 })
+  end
+  return self
+end
+
+-- Add highlight to the current (last) line at specific columns
+function Buffer:hl(hl_group, col_start, col_end)
+  table.insert(self.highlights, { #self.lines, hl_group, col_start, col_end })
+  return self
+end
+
+-- Get the last line's text length
+function Buffer:last_len()
+  return #self.lines[#self.lines]
+end
+
+function Buffer:get()
+  return self.lines, self.highlights
+end
+
 -- Parse the YAML config file
 local function parse_config(filepath)
   local file = io.open(filepath, 'r')
@@ -46,125 +78,105 @@ local function find_cheatsheet(data, id)
   return nil
 end
 
-local function build_header(cheatsheet, lines, highlights)
-  -- Header
-  local title = cheatsheet.title or 'CHEATSHEET'
+local function build_header(buf, cs_data)
+  local title = cs_data.title or 'CHEATSHEET'
   local header_line = string.format('║%s║',
     string.rep(' ', math.floor((WIDTH - 2 - #title) / 2)) ..
     title ..
     string.rep(' ', math.ceil((WIDTH - 2 - #title) / 2)))
 
-  table.insert(lines, '╔' .. string.rep('═', WIDTH - 2) .. '╗')
-  table.insert(highlights, { #lines, 'CheatHeader', 0, -1 })
-
-  table.insert(lines, header_line)
-  table.insert(highlights, { #lines, 'CheatHeader', 0, -1 })
-
-  table.insert(lines, '╚' .. string.rep('═', WIDTH - 2) .. '╝')
-  table.insert(highlights, { #lines, 'CheatHeader', 0, -1 })
-
-  table.insert(lines, '')
+  buf:add('╔' .. string.rep('═', WIDTH - 2) .. '╗', 'CheatHeader')
+  buf:add(header_line, 'CheatHeader')
+  buf:add('╚' .. string.rep('═', WIDTH - 2) .. '╝', 'CheatHeader')
+  buf:add('')
 end
 
--- Build content lines from cheatsheet data
-local function build_content(cheatsheet)
-  local lines = {}
-  local highlights = {} -- { line_num, hl_group, col_start, col_end }
+local function build_plugins_section(buf, entries)
+  local col_width = 40
+  for i = 1, #entries, 2 do
+    local e1 = entries[i]
+    local e2 = entries[i + 1]
 
-  build_header(cheatsheet, lines, highlights)
+    local left = string.format('  %-14s %s', e1.name, e1.desc or '')
+    local right = e2 and string.format('%-14s %s', e2.name, e2.desc or '') or ''
 
-  -- Sections
-  for _, section in ipairs(cheatsheet.sections) do
-    -- Section header
-    local section_header = '─── ' .. section.name .. ' '
-    section_header = section_header .. string.rep('─', WIDTH - #section_header)
-    table.insert(lines, section_header)
-    table.insert(highlights, { #lines, 'CheatSection', 0, -1 })
+    buf:add(left .. string.rep(' ', col_width - #left) .. right)
+    buf:hl('CheatPlugin', 2, 2 + #e1.name)
+    if e2 then
+      buf:hl('CheatPlugin', col_width, col_width + #e2.name)
+    end
+  end
+end
 
-    -- Section entries
-    if section.type == 'plugins' then
-      -- Two-column plugin layout
-      local col_width = 40
-      for i = 1, #section.entries, 2 do
-        local e1 = section.entries[i]
-        local e2 = section.entries[i + 1]
+local function build_settings_section(buf, entries)
+  local parts = {}
+  for _, entry in ipairs(entries) do
+    table.insert(parts, { label = entry.label, value = entry.value })
+  end
 
-        local left = string.format('  %-14s %s', e1.name, e1.desc or '')
-        local right = e2 and string.format('%-14s %s', e2.name, e2.desc or '') or ''
-        local line = left .. string.rep(' ', col_width - #left) .. right
+  for i = 1, #parts, 3 do
+    local line_parts = {}
+    local col_positions = {}
+    local col = 2
 
-        table.insert(lines, line)
-        -- Highlight plugin names
-        table.insert(highlights, { #lines, 'CheatPlugin', 2, 2 + #e1.name })
-        if e2 then
-          table.insert(highlights, { #lines, 'CheatPlugin', col_width, col_width + #e2.name })
-        end
-      end
-
-    elseif section.type == 'settings' then
-      -- Settings layout: label: value pairs
-      local parts = {}
-      for _, entry in ipairs(section.entries) do
-        table.insert(parts, { label = entry.label, value = entry.value })
-      end
-
-      -- Render 3 per line
-      for i = 1, #parts, 3 do
-        local line_parts = {}
-        local col_positions = {}
-        local col = 2
-
-        for j = 0, 2 do
-          local p = parts[i + j]
-          if p then
-            local part = p.label .. ': ' .. p.value
-            table.insert(line_parts, part)
-            table.insert(col_positions, { col = col, label_len = #p.label, value_start = col + #p.label + 2, value_len = #p.value })
-            col = col + #part + 4
-          end
-        end
-
-        local line = '  ' .. table.concat(line_parts, '    ')
-        table.insert(lines, line)
-
-        -- Highlight values
-        for _, pos in ipairs(col_positions) do
-          table.insert(highlights, { #lines, 'CheatValue', pos.value_start, pos.value_start + pos.value_len })
-        end
-      end
-
-    else
-      -- Standard keybinding layout
-      for _, entry in ipairs(section.entries) do
-        local key = entry.key or ''
-        local desc = entry.desc or ''
-        local prefix = entry.arrow and '→ ' or ''
-        local note = entry.note and (' ' .. entry.note) or ''
-
-        local line = string.format('  %-18s    %s%s%s', key, prefix, desc, note)
-        table.insert(lines, line)
-
-        -- Highlight key
-        table.insert(highlights, { #lines, 'CheatKey', 2, 2 + #key })
-
-        -- Highlight note if present
-        if entry.note then
-          local note_start = #line - #entry.note
-          table.insert(highlights, { #lines, 'CheatDim', note_start, #line })
-        end
+    for j = 0, 2 do
+      local p = parts[i + j]
+      if p then
+        local part = p.label .. ': ' .. p.value
+        table.insert(line_parts, part)
+        table.insert(col_positions, { value_start = col + #p.label + 2, value_len = #p.value })
+        col = col + #part + 4
       end
     end
 
-    table.insert(lines, '')
+    buf:add('  ' .. table.concat(line_parts, '    '))
+    for _, pos in ipairs(col_positions) do
+      buf:hl('CheatValue', pos.value_start, pos.value_start + pos.value_len)
+    end
+  end
+end
+
+local function build_keybindings_section(buf, entries)
+  for _, entry in ipairs(entries) do
+    local key = entry.key or ''
+    local desc = entry.desc or ''
+    local prefix = entry.arrow and '→ ' or ''
+    local note = entry.note and (' ' .. entry.note) or ''
+
+    buf:add(string.format('  %-18s    %s%s%s', key, prefix, desc, note))
+    buf:hl('CheatKey', 2, 2 + #key)
+
+    if entry.note then
+      buf:hl('CheatDim', buf:last_len() - #entry.note, buf:last_len())
+    end
+  end
+end
+
+-- Build content lines from cheatsheet data
+local function build_content(cs_data)
+  local buf = Buffer:new()
+
+  build_header(buf, cs_data)
+
+  for _, section in ipairs(cs_data.sections) do
+    local section_header = '─── ' .. section.name .. ' '
+    buf:add(section_header .. string.rep('─', WIDTH - #section_header), 'CheatSection')
+
+    if section.type == 'plugins' then
+      build_plugins_section(buf, section.entries)
+    elseif section.type == 'settings' then
+      build_settings_section(buf, section.entries)
+    else
+      build_keybindings_section(buf, section.entries)
+    end
+
+    buf:add('')
   end
 
-  -- Footer
   local footer = 'Press / to search, <Esc> or q to close'
-  local footer_line = string.rep(' ', math.floor((WIDTH - #footer) / 2)) .. footer
-  table.insert(lines, footer_line)
-  table.insert(highlights, { #lines, 'CheatDim', 0, -1 })
+  buf:add(string.rep(' ', math.floor((WIDTH - #footer) / 2)) .. footer, 'CheatDim')
 
-  return lines, highlights
+  return buf:get()
 end
 
 -- Define highlight groups
