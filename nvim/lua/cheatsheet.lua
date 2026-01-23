@@ -289,4 +289,7 @@ function M.open()
   vim.api.nvim_buf_set_keymap(buf, 'n', 'N', 'N', { noremap = true })
 end
 
+-- Create user command
+vim.api.nvim_create_user_command('Cheatsheet', M.open, { desc = 'Open vim cheatsheet' })
+
 return M

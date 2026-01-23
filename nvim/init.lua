@@ -119,7 +119,7 @@ vim.keymap.set({'n', 'v'}, '<Leader>p', '"+p')
 vim.keymap.set({'n', 'v'}, '<Leader>P', '"+P')
 vim.keymap.set('n', '<Leader>v', 'viw"0p')
 
-vim.keymap.set('n', '<Leader>?', require('cheatsheet').open, { desc = 'Open cheatsheet' })
+vim.keymap.set('n', '<Leader>?', ':Cheatsheet<CR>', { desc = 'Open cheatsheet', silent = true })
 
 vim.keymap.set('n', '<Leader>f', ':GFiles<Cr>')
 vim.keymap.set('n', '<Leader>F', ':Files<Cr>')
