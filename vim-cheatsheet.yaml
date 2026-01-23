@@ -1,107 +1,296 @@
-title: VIM CHEATSHEET
+cheatsheets:
+  - id: vim
+    title: VIM CHEATSHEET
+    sections:
+      - name: FILE NAVIGATION (FZF)
+        entries:
+          - key: "<Space>f"
+            desc: "Git files (:GFiles)"
+          - key: "<Space>F"
+            desc: "All files (:Files)"
+          - key: "<Space>b"
+            desc: "Buffers"
+          - key: "<Space>h"
+            desc: "File history"
 
-sections:
-  - name: FILE NAVIGATION (FZF)
-    entries:
-      - key: "<Space>f"
-        desc: "Git files (:GFiles)"
-      - key: "<Space>F"
-        desc: "All files (:Files)"
-      - key: "<Space>b"
-        desc: "Buffers"
-      - key: "<Space>h"
-        desc: "File history"
+      - name: CLIPBOARD
+        entries:
+          - key: "<Space>y"
+            desc: "Yank to system clipboard"
+          - key: "<Space>p/P"
+            desc: "Paste/paste before from clipboard"
+          - key: "<Space>v"
+            desc: "Replace word with reg 0"
+          - key: "<Space>yf"
+            desc: "Yank filename"
 
-  - name: CLIPBOARD
-    entries:
-      - key: "<Space>y"
-        desc: "Yank to system clipboard"
-      - key: "<Space>p/P"
-        desc: "Paste/paste before from clipboard"
-      - key: "<Space>v"
-        desc: "Replace word with reg 0"
-      - key: "<Space>yf"
-        desc: "Yank filename"
+      - name: SEARCH / GREP
+        entries:
+          - key: "<Space>g"
+            desc: "Grep word under cursor"
+          - key: "<Space>G"
+            desc: "Grep in new tab"
+          - key: "<Space>l"
+            desc: "Literal grep"
+          - key: "<Space>gl"
+            desc: "Grep visual selection"
+            note: "(visual)"
 
-  - name: SEARCH / GREP
-    entries:
-      - key: "<Space>g"
-        desc: "Grep word under cursor"
-      - key: "<Space>G"
-        desc: "Grep in new tab"
-      - key: "<Space>l"
-        desc: "Literal grep"
-      - key: "<Space>gl"
-        desc: "Grep visual selection"
-        note: "(visual)"
+      - name: GIT / GITHUB
+        entries:
+          - key: "<Space>B"
+            desc: "Open file on GitHub (:GBrowse!)"
 
-  - name: GIT / GITHUB
-    entries:
-      - key: "<Space>B"
-        desc: "Open file on GitHub (:GBrowse!)"
+      - name: WINDOW / SPLITS
+        entries:
+          - key: "<Space>w"
+            desc: "Window commands (<C-w>)"
+          - key: "<Space>S"
+            desc: "Alternate file in split"
 
-  - name: WINDOW / SPLITS
-    entries:
-      - key: "<Space>w"
-        desc: "Window commands (<C-w>)"
-      - key: "<Space>S"
-        desc: "Alternate file in split"
+      - name: TEXT OBJECTS
+        entries:
+          - key: "vie / vae / yie"
+            desc: "Entire file"
+          - key: "vic / vac"
+            desc: "Word column"
 
-  - name: TEXT OBJECTS
-    entries:
-      - key: "vie / vae / yie"
-        desc: "Entire file"
-      - key: "vic / vac"
-        desc: "Word column"
+      - name: INSERT MODE
+        entries:
+          - key: "def@"
+            desc: "def...end"
+            arrow: true
+          - key: "info@"
+            desc: "Rails.logger.info()"
+            arrow: true
 
-  - name: INSERT MODE
-    entries:
-      - key: "def@"
-        desc: "def...end"
-        arrow: true
-      - key: "info@"
-        desc: "Rails.logger.info()"
-        arrow: true
+      - name: HELP
+        entries:
+          - key: "<Space>?"
+            desc: "Open this cheatsheet"
 
-  - name: HELP
-    entries:
-      - key: "<Space>?"
-        desc: "Open this cheatsheet"
+      - name: PLUGINS
+        type: plugins
+        entries:
+          - name: "vim-fugitive"
+            desc: "Git integration"
+          - name: "vim-rhubarb"
+            desc: "GitHub :GBrowse"
+          - name: "fzf.vim"
+            desc: "Fuzzy finder"
+          - name: "vim-marked"
+            desc: "Markdown preview"
+          - name: "vim-rails"
+            desc: "Rails support"
+          - name: "vim-bundler"
+            desc: ":Bundle open"
+          - name: "vim-textobj-*"
+            desc: "Text objects"
+          - name: "claude-code.nvim"
+            desc: "Claude AI"
+          - name: "gen.nvim"
+            desc: "LLM (Ollama)"
 
-  - name: PLUGINS
-    type: plugins
-    entries:
-      - name: "vim-fugitive"
-        desc: "Git integration"
-      - name: "vim-rhubarb"
-        desc: "GitHub :GBrowse"
-      - name: "fzf.vim"
-        desc: "Fuzzy finder"
-      - name: "vim-marked"
-        desc: "Markdown preview"
-      - name: "vim-rails"
-        desc: "Rails support"
-      - name: "vim-bundler"
-        desc: ":Bundle open"
-      - name: "vim-textobj-*"
-        desc: "Text objects"
-      - name: "claude-code.nvim"
-        desc: "Claude AI"
-      - name: "gen.nvim"
-        desc: "LLM (Ollama)"
+      - name: SETTINGS
+        type: settings
+        entries:
+          - label: "Line numbers"
+            value: "ON"
+          - label: "Indent"
+            value: "2 spaces"
+          - label: "Color column"
+            value: "80"
+          - label: "Search"
+            value: "smart-case"
+          - label: "Scrolloff"
+            value: "2 lines"
+          - label: "Colorscheme"
+            value: "apprentice"
 
-  - name: SETTINGS
-    type: settings
-    entries:
-      - label: "Line numbers"
-        value: "ON"
-      - label: "Indent"
-        value: "2 spaces"
-      - label: "Color column"
-        value: "80"
-      - label: "Search"
-        value: "smart-case"
-      - label: "Scrolloff"
-        value: "2 lines"
-      - label: "Colorscheme"
-        value: "apprentice"
+  - id: tailwind
+    title: TAILWIND CHEATSHEET
+    sections:
+      - name: SPACING (p, m, gap)
+        entries:
+          - key: "0"
+            desc: "0px"
+          - key: "px"
+            desc: "1px"
+          - key: "1"
+            desc: "0.25rem (4px)"
+          - key: "2"
+            desc: "0.5rem (8px)"
+          - key: "4"
+            desc: "1rem (16px)"
+          - key: "8"
+            desc: "2rem (32px)"
+          - key: "16"
+            desc: "4rem (64px)"
+
+      - name: WIDTH / HEIGHT
+        entries:
+          - key: "w-full"
+            desc: "width: 100%"
+          - key: "w-screen"
+            desc: "width: 100vw"
+          - key: "w-fit"
+            desc: "width: fit-content"
+          - key: "h-full"
+            desc: "height: 100%"
+          - key: "h-screen"
+            desc: "height: 100vh"
+          - key: "min-h-screen"
+            desc: "min-height: 100vh"
+          - key: "max-w-md"
+            desc: "max-width: 28rem"
+          - key: "max-w-xl"
+            desc: "max-width: 36rem"
+
+      - name: FLEXBOX
+        entries:
+          - key: "flex"
+            desc: "display: flex"
+          - key: "flex-col"
+            desc: "flex-direction: column"
+          - key: "flex-row"
+            desc: "flex-direction: row"
+          - key: "flex-wrap"
+            desc: "flex-wrap: wrap"
+          - key: "flex-1"
+            desc: "flex: 1 1 0%"
+          - key: "grow"
+            desc: "flex-grow: 1"
+          - key: "shrink-0"
+            desc: "flex-shrink: 0"
+
+      - name: GRID
+        entries:
+          - key: "grid"
+            desc: "display: grid"
+          - key: "grid-cols-{n}"
+            desc: "grid-template-columns"
+          - key: "col-span-{n}"
+            desc: "grid-column: span n"
+          - key: "gap-{n}"
+            desc: "gap: {spacing}"
+
+      - name: ALIGNMENT
+        entries:
+          - key: "justify-center"
+            desc: "justify-content: center"
+          - key: "justify-between"
+            desc: "justify-content: space-between"
+          - key: "items-center"
+            desc: "align-items: center"
+          - key: "items-start"
+            desc: "align-items: flex-start"
+          - key: "self-center"
+            desc: "align-self: center"
+
+      - name: TYPOGRAPHY
+        entries:
+          - key: "text-xs"
+            desc: "0.75rem (12px)"
+          - key: "text-sm"
+            desc: "0.875rem (14px)"
+          - key: "text-base"
+            desc: "1rem (16px)"
+          - key: "text-lg"
+            desc: "1.125rem (18px)"
+          - key: "text-xl"
+            desc: "1.25rem (20px)"
+          - key: "font-bold"
+            desc: "font-weight: 700"
+          - key: "font-medium"
+            desc: "font-weight: 500"
+          - key: "leading-tight"
+            desc: "line-height: 1.25"
+          - key: "tracking-wide"
+            desc: "letter-spacing: 0.025em"
+
+      - name: COLORS
+        entries:
+          - key: "text-{color}-500"
+            desc: "color"
+          - key: "bg-{color}-500"
+            desc: "background-color"
+          - key: "border-{color}-500"
+            desc: "border-color"
+          - key: "text-white"
+            desc: "#fff"
+          - key: "bg-black"
+            desc: "#000"
+          - key: "bg-transparent"
+            desc: "transparent"
+
+      - name: BORDERS
+        entries:
+          - key: "border"
+            desc: "border-width: 1px"
+          - key: "border-2"
+            desc: "border-width: 2px"
+          - key: "rounded"
+            desc: "border-radius: 0.25rem"
+          - key: "rounded-lg"
+            desc: "border-radius: 0.5rem"
+          - key: "rounded-full"
+            desc: "border-radius: 9999px"
+
+      - name: POSITION
+        entries:
+          - key: "relative"
+            desc: "position: relative"
+          - key: "absolute"
+            desc: "position: absolute"
+          - key: "fixed"
+            desc: "position: fixed"
+          - key: "sticky"
+            desc: "position: sticky"
+          - key: "inset-0"
+            desc: "top/right/bottom/left: 0"
+          - key: "top-0"
+            desc: "top: 0"
+          - key: "z-10"
+            desc: "z-index: 10"
+
+      - name: DISPLAY
+        entries:
+          - key: "block"
+            desc: "display: block"
+          - key: "inline-block"
+            desc: "display: inline-block"
+          - key: "hidden"
+            desc: "display: none"
+          - key: "invisible"
+            desc: "visibility: hidden"
+
+      - name: EFFECTS
+        entries:
+          - key: "shadow"
+            desc: "box-shadow (small)"
+          - key: "shadow-lg"
+            desc: "box-shadow (large)"
+          - key: "opacity-50"
+            desc: "opacity: 0.5"
+          - key: "transition"
+            desc: "transition (150ms)"
+          - key: "duration-300"
+            desc: "transition: 300ms"
+          - key: "hover:{class}"
+            desc: "apply on hover"
+          - key: "focus:{class}"
+            desc: "apply on focus"
+
+      - name: RESPONSIVE PREFIXES
+        type: settings
+        entries:
+          - label: "sm"
+            value: "640px"
+          - label: "md"
+            value: "768px"
+          - label: "lg"
+            value: "1024px"
+          - label: "xl"
+            value: "1280px"
+          - label: "2xl"
+            value: "1536px"

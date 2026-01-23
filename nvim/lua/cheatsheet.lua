@@ -1,11 +1,13 @@
 -- Vim Cheatsheet floating window
--- Reads configuration from cheatsheet.yaml
+-- Reads configuration from vim-cheatsheet.yaml
 local M = {}
+local yaml = require('tinyyaml')
 
 local WIDTH = 81
+local config_path = vim.fn.expand('~/.config/vim-cheatsheet.yaml')
 
--- Simple YAML parser for our specific format
-local function parse_yaml(filepath)
+-- Parse the YAML config file
+local function parse_config(filepath)
   local file = io.open(filepath, 'r')
   if not file then
     return nil, 'Could not open file: ' .. filepath
@@ -14,90 +16,43 @@ local function parse_yaml(filepath)
   local content = file:read('*all')
   file:close()
 
-  local data = { sections = {} }
-  local current_section = nil
-  local current_entry = nil
-  local in_entries = false
-
-  for line in content:gmatch('[^\n]+') do
-    -- Title
-    local title = line:match('^title:%s*(.+)$')
-    if title then
-      data.title = title
-    end
-
-    -- Section start (only at 2-space indent, not inside entries)
-    local section_name = line:match('^  %- name:%s*(.+)$')
-    if section_name and not in_entries then
-      current_section = { name = section_name, entries = {} }
-      table.insert(data.sections, current_section)
-      current_entry = nil
-    end
-
-    -- Section type
-    local section_type = line:match('^%s+type:%s*(.+)$')
-    if section_type and current_section then
-      current_section.type = section_type
-    end
-
-    -- Entries marker
-    if line:match('^%s+entries:') then
-      in_entries = true
-    end
-
-    -- New section resets in_entries (check for next section at proper indent)
-    if line:match('^  %- name:') and in_entries then
-      in_entries = false
-      local new_section_name = line:match('^  %- name:%s*(.+)$')
-      if new_section_name then
-        current_section = { name = new_section_name, entries = {} }
-        table.insert(data.sections, current_section)
-        current_entry = nil
-      end
-    end
-
-    -- Entry start (key, name, or label) - deeper indent
-    if in_entries and current_section then
-      local key = line:match('^%s+%- key:%s*"(.+)"$')
-      local entry_name = line:match('^%s+%- name:%s*"(.+)"$')
-      local label = line:match('^%s+%- label:%s*"(.+)"$')
-
-      if key then
-        current_entry = { key = key }
-        table.insert(current_section.entries, current_entry)
-      elseif entry_name then
-        current_entry = { name = entry_name }
-        table.insert(current_section.entries, current_entry)
-      elseif label then
-        current_entry = { label = label }
-        table.insert(current_section.entries, current_entry)
-      end
-
-      -- Entry properties (on same or subsequent lines)
-      if current_entry then
-        local desc = line:match('desc:%s*"(.+)"$')
-        local value = line:match('value:%s*"(.+)"$')
-        local note = line:match('note:%s*"(.+)"$')
-        local arrow = line:match('arrow:%s*(.+)$')
-
-        if desc then current_entry.desc = desc end
-        if value then current_entry.value = value end
-        if note then current_entry.note = note end
-        if arrow == 'true' then current_entry.arrow = true end
-      end
-    end
+  local ok, data = pcall(yaml.parse, content)
+  if not ok then
+    return nil, 'Failed to parse YAML: ' .. tostring(data)
   end
 
   return data
 end
 
--- Build content lines from parsed YAML
-local function build_content(data)
+-- Get list of available cheatsheet IDs
+local function get_cheatsheet_ids()
+  local data, _ = parse_config(config_path)
+  if not data or not data.cheatsheets then return {} end
+
+  local ids = {}
+  for _, sheet in ipairs(data.cheatsheets) do
+    table.insert(ids, sheet.id)
+  end
+  return ids
+end
+
+-- Find cheatsheet by ID
+local function find_cheatsheet(data, id)
+  for _, sheet in ipairs(data.cheatsheets) do
+    if sheet.id == id then
+      return sheet
+    end
+  end
+  return nil
+end
+
+-- Build content lines from cheatsheet data
+local function build_content(cheatsheet)
   local lines = {}
   local highlights = {} -- { line_num, hl_group, col_start, col_end }
 
   -- Header
-  local title = data.title or 'CHEATSHEET'
+  local title = cheatsheet.title or 'CHEATSHEET'
   local header_line = string.format('║%s║',
     string.rep(' ', math.floor((WIDTH - 2 - #title) / 2)) ..
     title ..
@@ -115,7 +70,7 @@ local function build_content(data)
   table.insert(lines, '')
 
   -- Sections
-  for _, section in ipairs(data.sections) do
+  for _, section in ipairs(cheatsheet.sections) do
     -- Section header
     local section_header = '─── ' .. section.name .. ' '
     section_header = section_header .. string.rep('─', WIDTH - #section_header)
@@ -227,19 +182,32 @@ local function apply_highlights(buf, highlights)
   end
 end
 
-function M.open()
+function M.open(id)
   setup_highlights()
 
-  -- Find vim-cheatsheet.yaml (symlinked to ~/.config/)
-  local config_path = vim.fn.expand('~/.config/vim-cheatsheet.yaml')
-  local data, err = parse_yaml(config_path)
-
-  if not data then
+  local data, err = parse_config(config_path)
+  if not data or not data.cheatsheets then
     vim.notify('Cheatsheet: ' .. (err or 'Unknown error'), vim.log.levels.ERROR)
     return
   end
 
-  local lines, highlights = build_content(data)
+  -- Default to first cheatsheet if no id provided
+  local cheatsheet
+  if id and id ~= '' then
+    cheatsheet = find_cheatsheet(data, id)
+    if not cheatsheet then
+      vim.notify('Cheatsheet: No cheatsheet found with id "' .. id .. '"', vim.log.levels.ERROR)
+      return
+    end
+  else
+    cheatsheet = data.cheatsheets[1]
+    if not cheatsheet then
+      vim.notify('Cheatsheet: No cheatsheets defined', vim.log.levels.ERROR)
+      return
+    end
+  end
+
+  local lines, highlights = build_content(cheatsheet)
 
   -- Calculate window size
   local height = #lines
@@ -289,7 +257,25 @@ function M.open()
   vim.api.nvim_buf_set_keymap(buf, 'n', 'N', 'N', { noremap = true })
 end
 
--- Create user command
-vim.api.nvim_create_user_command('Cheatsheet', M.open, { desc = 'Open vim cheatsheet' })
+-- Tab completion for cheatsheet IDs
+local function complete_cheatsheet(arg_lead, _, _)
+  local ids = get_cheatsheet_ids()
+  local matches = {}
+  for _, id in ipairs(ids) do
+    if id:find('^' .. arg_lead) then
+      table.insert(matches, id)
+    end
+  end
+  return matches
+end
+
+-- Create user command with completion
+vim.api.nvim_create_user_command('Cheatsheet', function(opts)
+  M.open(opts.args)
+end, {
+  nargs = '?',
+  complete = complete_cheatsheet,
+  desc = 'Open cheatsheet (optional: specify id)',
+})
 
 return M
