@@ -3,6 +3,9 @@
 local M = {}
 local yaml = require('tinyyaml')
 
+-- Telescope modules (lazy-loaded)
+local pickers, finders, conf, actions, action_state, entry_display
+
 local WIDTH = 81
 local config_path = vim.fn.expand('~/.config/vim-cheatsheet.yaml')
 
@@ -198,7 +201,7 @@ local function apply_highlights(buf, highlights)
   end
 end
 
-local function create_window(lines, highlights)
+local function create_window(lines, highlights, cheatsheet_id)
   -- Calculate window size
   local height = #lines
   local ui = vim.api.nvim_list_uis()[1]
@@ -241,10 +244,27 @@ local function create_window(lines, highlights)
     })
   end
 
+  -- Close when cursor leaves the buffer
+  vim.api.nvim_create_autocmd('BufLeave', {
+    buffer = buf,
+    once = true,
+    callback = function()
+      if vim.api.nvim_win_is_valid(win) then
+        vim.api.nvim_win_close(win, true)
+      end
+    end,
+  })
+
   -- Allow search with /
   vim.api.nvim_buf_set_keymap(buf, 'n', '/', '/', { noremap = true })
   vim.api.nvim_buf_set_keymap(buf, 'n', 'n', 'n', { noremap = true })
   vim.api.nvim_buf_set_keymap(buf, 'n', 'N', 'N', { noremap = true })
+
+  -- Switch to Telescope mode with <Tab>
+  vim.keymap.set('n', '<Tab>', function()
+    vim.api.nvim_win_close(win, true)
+    M.telescope(cheatsheet_id)
+  end, { buffer = buf, noremap = true, silent = true })
 end
 
 function M.open(id)
@@ -274,7 +294,7 @@ function M.open(id)
 
   local lines, highlights = build_content(cheatsheet)
 
-  create_window(lines, highlights);
+  create_window(lines, highlights, cheatsheet.id)
 end
 
 
@@ -290,13 +310,207 @@ local function complete_cheatsheet(arg_lead, _, _)
   return matches
 end
 
--- Create user command with completion
+-- Load Telescope modules (lazy)
+local function load_telescope()
+  if pickers then return true end
+
+  local ok, _ = pcall(require, 'telescope')
+  if not ok then
+    vim.notify('Cheatsheet: Telescope is required for fuzzy search', vim.log.levels.ERROR)
+    return false
+  end
+
+  pickers = require('telescope.pickers')
+  finders = require('telescope.finders')
+  conf = require('telescope.config').values
+  actions = require('telescope.actions')
+  action_state = require('telescope.actions.state')
+  entry_display = require('telescope.pickers.entry_display')
+  return true
+end
+
+-- Flatten cheatsheet data into a list of searchable entries
+local function flatten_entries(cs_data)
+  local entries = {}
+
+  for _, section in ipairs(cs_data.sections) do
+    if section.type == 'plugins' then
+      for _, entry in ipairs(section.entries) do
+        table.insert(entries, {
+          section = section.name,
+          key = entry.name,
+          desc = entry.desc or '',
+          type = 'plugin',
+        })
+      end
+    elseif section.type == 'settings' then
+      for _, entry in ipairs(section.entries) do
+        table.insert(entries, {
+          section = section.name,
+          key = entry.label,
+          desc = entry.value or '',
+          type = 'setting',
+        })
+      end
+    else
+      for _, entry in ipairs(section.entries) do
+        table.insert(entries, {
+          section = section.name,
+          key = entry.key or '',
+          desc = entry.desc or '',
+          note = entry.note,
+          arrow = entry.arrow,
+          type = 'keybinding',
+        })
+      end
+    end
+  end
+
+  return entries
+end
+
+-- Open cheatsheet in Telescope picker
+function M.telescope(id)
+  if not load_telescope() then return end
+
+  local data, err = parse_config(config_path)
+  if not data or not data.cheatsheets then
+    vim.notify('Cheatsheet: ' .. (err or 'Unknown error'), vim.log.levels.ERROR)
+    return
+  end
+
+  local cheatsheet
+  if id and id ~= '' then
+    cheatsheet = find_cheatsheet(data, id)
+    if not cheatsheet then
+      vim.notify('Cheatsheet: No cheatsheet found with id "' .. id .. '"', vim.log.levels.ERROR)
+      return
+    end
+  else
+    cheatsheet = data.cheatsheets[1]
+    if not cheatsheet then
+      vim.notify('Cheatsheet: No cheatsheets defined', vim.log.levels.ERROR)
+      return
+    end
+  end
+
+  local entries = flatten_entries(cheatsheet)
+
+  local displayer = entry_display.create({
+    separator = ' ',
+    items = {
+      { width = 20 },  -- key
+      { width = 15 },  -- section
+      { remaining = true },  -- description
+    },
+  })
+
+  local make_display = function(entry)
+    local desc = entry.value.desc
+    if entry.value.arrow then
+      desc = '→ ' .. desc
+    end
+    if entry.value.note then
+      desc = desc .. ' ' .. entry.value.note
+    end
+
+    return displayer({
+      { entry.value.key, 'TelescopeResultsIdentifier' },
+      { entry.value.section, 'TelescopeResultsComment' },
+      { desc, 'TelescopeResultsNormal' },
+    })
+  end
+
+  pickers.new({}, {
+    prompt_title = cheatsheet.title or 'Cheatsheet',
+    finder = finders.new_table({
+      results = entries,
+      entry_maker = function(entry)
+        local ordinal = entry.key .. ' ' .. entry.section .. ' ' .. entry.desc
+        return {
+          value = entry,
+          display = make_display,
+          ordinal = ordinal,
+        }
+      end,
+    }),
+    sorter = conf.generic_sorter({}),
+    attach_mappings = function(prompt_bufnr, map)
+      actions.select_default:replace(function()
+        actions.close(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        if selection and selection.value.key then
+          vim.fn.setreg('+', selection.value.key)
+          vim.notify('Copied: ' .. selection.value.key, vim.log.levels.INFO)
+        end
+      end)
+
+      -- Switch to float mode with <Tab>
+      map({ 'i', 'n' }, '<Tab>', function()
+        actions.close(prompt_bufnr)
+        M.open(cheatsheet.id)
+      end)
+
+      return true
+    end,
+  }):find()
+end
+
+-- Open cheatsheet using configured display mode
+function M.show(id)
+  local data, err = parse_config(config_path)
+  if not data or not data.cheatsheets then
+    vim.notify('Cheatsheet: ' .. (err or 'Unknown error'), vim.log.levels.ERROR)
+    return
+  end
+
+  local cheatsheet
+  if id and id ~= '' then
+    cheatsheet = find_cheatsheet(data, id)
+    if not cheatsheet then
+      vim.notify('Cheatsheet: No cheatsheet found with id "' .. id .. '"', vim.log.levels.ERROR)
+      return
+    end
+  else
+    cheatsheet = data.cheatsheets[1]
+    if not cheatsheet then
+      vim.notify('Cheatsheet: No cheatsheets defined', vim.log.levels.ERROR)
+      return
+    end
+  end
+
+  local display_mode = cheatsheet.display or 'telescope'
+
+  if display_mode == 'float' then
+    M.open(id)
+  else
+    M.telescope(id)
+  end
+end
+
+-- Create user commands with completion
 vim.api.nvim_create_user_command('Cheatsheet', function(opts)
+  M.show(opts.args)
+end, {
+  nargs = '?',
+  complete = complete_cheatsheet,
+  desc = 'Open cheatsheet using configured display mode',
+})
+
+vim.api.nvim_create_user_command('CheatsheetFloat', function(opts)
   M.open(opts.args)
 end, {
   nargs = '?',
   complete = complete_cheatsheet,
-  desc = 'Open cheatsheet (optional: specify id)',
+  desc = 'Open cheatsheet in floating window (optional: specify id)',
+})
+
+vim.api.nvim_create_user_command('CheatsheetTelescope', function(opts)
+  M.telescope(opts.args)
+end, {
+  nargs = '?',
+  complete = complete_cheatsheet,
+  desc = 'Open cheatsheet in Telescope (optional: specify id)',
 })
 
 return M

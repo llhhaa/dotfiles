@@ -1,6 +1,7 @@
 cheatsheets:
   - id: vim
     title: VIM CHEATSHEET
+    display: float
     sections:
       - name: FILE NAVIGATION (FZF)
         entries:
@@ -109,6 +110,7 @@ cheatsheets:
 
   - id: tailwind
     title: TAILWIND CHEATSHEET
+    display: telescope
     sections:
       - name: SPACING (p, m, gap)
         entries:
