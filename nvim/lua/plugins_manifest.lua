@@ -21,6 +21,11 @@ return {
   'coderifous/textobj-word-column.vim', -- provides vic, vac, etc.
   'junegunn/fzf',
   'junegunn/fzf.vim',
+  {
+    'nvim-telescope/telescope.nvim',
+    tag = '0.1.8',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+  },
   'itspriddle/vim-marked',
   -- 'sheerun/vim-polyglot',
   'tpope/vim-rails',
