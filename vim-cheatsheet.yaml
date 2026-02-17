@@ -72,41 +72,45 @@ cheatsheets:
 
       - name: PLUGINS
         type: plugins
+        columns: 2
+        key_color: "#af87d7"
         entries:
-          - name: "vim-fugitive"
+          - key: "vim-fugitive"
             desc: "Git integration"
-          - name: "vim-rhubarb"
+          - key: "vim-rhubarb"
             desc: "GitHub :GBrowse"
-          - name: "fzf.vim"
+          - key: "fzf.vim"
             desc: "Fuzzy finder"
-          - name: "vim-marked"
+          - key: "vim-marked"
             desc: "Markdown preview"
-          - name: "vim-rails"
+          - key: "vim-rails"
             desc: "Rails support"
-          - name: "vim-bundler"
+          - key: "vim-bundler"
             desc: ":Bundle open"
-          - name: "vim-textobj-*"
+          - key: "vim-textobj-*"
             desc: "Text objects"
-          - name: "claude-code.nvim"
+          - key: "claude-code.nvim"
             desc: "Claude AI"
-          - name: "gen.nvim"
+          - key: "gen.nvim"
             desc: "LLM (Ollama)"
 
       - name: SETTINGS
         type: settings
+        columns: 3
+        key_color: "#5fafaf"
         entries:
-          - label: "Line numbers"
-            value: "ON"
-          - label: "Indent"
-            value: "2 spaces"
-          - label: "Color column"
-            value: "80"
-          - label: "Search"
-            value: "smart-case"
-          - label: "Scrolloff"
-            value: "2 lines"
-          - label: "Colorscheme"
-            value: "apprentice"
+          - key: "Line numbers"
+            desc: "ON"
+          - key: "Indent"
+            desc: "2 spaces"
+          - key: "Color column"
+            desc: "80"
+          - key: "Search"
+            desc: "smart-case"
+          - key: "Scrolloff"
+            desc: "2 lines"
+          - key: "Colorscheme"
+            desc: "apprentice"
 
   - id: tailwind
     title: TAILWIND CHEATSHEET
@@ -285,14 +289,15 @@ cheatsheets:
 
       - name: RESPONSIVE PREFIXES
         type: settings
+        columns: 5
         entries:
-          - label: "sm"
-            value: "640px"
-          - label: "md"
-            value: "768px"
-          - label: "lg"
-            value: "1024px"
-          - label: "xl"
-            value: "1280px"
-          - label: "2xl"
-            value: "1536px"
+          - key: "sm"
+            desc: "640px"
+          - key: "md"
+            desc: "768px"
+          - key: "lg"
+            desc: "1024px"
+          - key: "xl"
+            desc: "1280px"
+          - key: "2xl"
+            desc: "1536px"

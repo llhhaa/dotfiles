@@ -45,6 +45,14 @@ return {
     end
   },
   {
+    dir = '~/Repos/cheet.nvim',
+    config = function()
+      require('cheet').setup({
+        paths = { '~/.config/vim-cheatsheet.yaml' }
+      })
+    end
+  },
+  {
     "David-Kunz/gen.nvim",
     opts = {
         model = "deepseek-coder-v2", -- The default model to use.
