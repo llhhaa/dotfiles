@@ -76,6 +76,8 @@ alias caff='caffdown 36000'
 alias baudit='bundle exec bundle-audit update && bundle exec bundle-audit check'
 alias vim='nvim'
 
+alias claude-personal='CLAUDE_CONFIG_DIR=~/.claude-personal claude'
+
 function n() {
   nvim $1
 }
@@ -218,70 +220,6 @@ function gcol() {
   fi
 }
 
-# Display Neovim configuration cheatsheet
-function nvim-cheat() {
-  local R='\033[0m'       # Reset
-  local B='\033[1m'       # Bold
-  local C='\033[36m'      # Cyan
-  local Y='\033[33m'      # Yellow
-  local G='\033[32m'      # Green
-  local M='\033[35m'      # Magenta
-  local D='\033[2m'       # Dim
-
-  echo ""
-  echo -e "${C}${B}╔═══════════════════════════════════════════════════════════════════════════════╗${R}"
-  echo -e "${C}${B}║                                VIM CHEATSHEET                                 ║${R}"
-  echo -e "${C}${B}╚═══════════════════════════════════════════════════════════════════════════════╝${R}"
-  echo ""
-  echo -e "${Y}${B}─── FILE NAVIGATION (FZF) ──────────────────────────────────────────────────────${R}"
-  echo -e "  ${G}<Space>f${R}    Git files (:GFiles)"
-  echo -e "  ${G}<Space>F${R}    All files (:Files)"
-  echo -e "  ${G}<Space>b${R}    Buffers"
-  echo -e "  ${G}<Space>h${R}    File history"
-  echo ""
-  echo -e "${Y}${B}─── CLIPBOARD ──────────────────────────────────────────────────────────────────${R}"
-  echo -e "  ${G}<Space>y${R}    Yank to system clipboard"
-  echo -e "  ${G}<Space>p/P${R}  Paste/paste before from clipboard"
-  echo -e "  ${G}<Space>v${R}    Replace word with reg 0"
-  echo -e "  ${G}<Space>yf${R}   Yank filename"
-  echo ""
-  echo -e "${Y}${B}─── SEARCH / GREP ──────────────────────────────────────────────────────────────${R}"
-  echo -e "  ${G}<Space>g${R}    Grep word under cursor"
-  echo -e "  ${G}<Space>G${R}    Grep in new tab"
-  echo -e "  ${G}<Space>l${R}    Literal grep"
-  echo -e "  ${G}<Space>gl${R}   Grep visual selection ${D}(visual)${R}"
-  echo ""
-  echo -e "${Y}${B}─── GIT / GITHUB ───────────────────────────────────────────────────────────────${R}"
-  echo -e "  ${G}<Space>B${R}    Open file on GitHub (:GBrowse!)"
-  echo ""
-  echo -e "${Y}${B}─── WINDOW / SPLITS ────────────────────────────────────────────────────────────${R}"
-  echo -e "  ${G}<Space>w${R}    Window commands (<C-w>)"
-  echo -e "  ${G}<Space>S${R}    Alternate file in split"
-  echo ""
-  echo -e "${Y}${B}─── TEXT OBJECTS ───────────────────────────────────────────────────────────────${R}"
-  echo -e "  ${G}vie / vae / yie${R}   Entire file"
-  echo -e "  ${G}vic / vac${R}         Word column"
-  echo ""
-  echo -e "${Y}${B}─── INSERT MODE ────────────────────────────────────────────────────────────────${R}"
-  echo -e "  ${G}def@${R}      → def...end"
-  echo -e "  ${G}info@${R}     → Rails.logger.info()"
-  echo ""
-  echo -e "${Y}${B}─── HELP ───────────────────────────────────────────────────────────────────────${R}"
-  echo -e "  ${G}<Space>?${R}    Open this cheatsheet"
-  echo ""
-  echo -e "${Y}${B}─── PLUGINS ────────────────────────────────────────────────────────────────────${R}"
-  echo -e "  ${M}vim-fugitive${R}      Git integration         ${M}vim-rhubarb${R}       GitHub :GBrowse"
-  echo -e "  ${M}fzf.vim${R}           Fuzzy finder            ${M}vim-marked${R}        Markdown preview"
-  echo -e "  ${M}vim-rails${R}         Rails support           ${M}vim-bundler${R}       :Bundle open"
-  echo -e "  ${M}vim-textobj-*${R}     Text objects            ${M}claude-code.nvim${R}  Claude AI"
-  echo -e "  ${M}gen.nvim${R}          LLM (Ollama)"
-  echo ""
-  echo -e "${Y}${B}─── SETTINGS ───────────────────────────────────────────────────────────────────${R}"
-  echo -e "  Line numbers: ${C}ON${R}    Indent: ${C}2 spaces${R}    Color column: ${C}80${R}"
-  echo -e "  Search: ${C}smart-case${R}  Scrolloff: ${C}2 lines${R}  Colorscheme: ${C}apprentice${R}"
-  echo ""
-}
-
 # Function to create and open a timestamped scratch file
 function makescratch() {
   # Check if a name was provided
@@ -318,6 +256,47 @@ function makescratch() {
   # Open the file in Neovim
   nvim "$filepath"
 }
+
+
+# Copy git patch from given file
+function gcopy() {
+  git diff $1 | pbcopy
+}
+
+# Apply git patch from macOS clipboard (pbpaste)
+git-apply-clipboard() {
+    local patch_file=$(mktemp -t clipboard_patch.XXXXXX.patch)
+
+    # Get clipboard, strip all CR characters (handles CRLF), save to temp file【7】【8】
+    if ! pbpaste | tr -d '\r' > "$patch_file"; then
+        echo "Error: Failed to read clipboard" >&2
+        rm -f "$patch_file"
+        return 1
+    fi
+
+    # Unconditionally ensure trailing newline (fixes "corrupt patch at line X")【9】
+    # Extra blank line at end is harmless to git apply
+    if [[ -s "$patch_file" ]]; then
+        printf '\n' >> "$patch_file"
+    fi
+
+    if git apply "$patch_file"; then
+        echo "✓ Patch applied successfully"
+        rm -f "$patch_file"
+    else
+        echo "✗ Error: Failed to apply patch" >&2
+        echo "  Patch preserved at: $patch_file" >&2
+        echo "" >&2
+        echo "Debug - last 5 lines (od -c shows \\r as \\r, \\n as \\n):" >&2
+        tail -n 5 "$patch_file" | od -c >&2
+        echo "" >&2
+        echo "If you see \\r (carriage returns) above, that's the issue." >&2
+        return 1
+    fi
+}
+
+# Optional alias for quicker access
+alias gapply='git-apply-clipboard'
 
 # retrieve and set environment variables in the MacOS Keychain
 function keychain-environment-variable () {
