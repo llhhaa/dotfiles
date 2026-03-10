@@ -1,11 +1,48 @@
 -- Vim Cheatsheet floating window
--- Reads configuration from cheatsheet.yaml
+-- Reads configuration from vim-cheatsheet.yaml
 local M = {}
+local yaml = require('tinyyaml')
+
+-- Telescope modules (lazy-loaded)
+local pickers, finders, conf, actions, action_state, entry_display
 
 local WIDTH = 81
+local config_path = vim.fn.expand('~/.config/vim-cheatsheet.yaml')
 
--- Simple YAML parser for our specific format
-local function parse_yaml(filepath)
+-- Buffer: manages lines and highlights together
+local Buffer = {}
+Buffer.__index = Buffer
+
+function Buffer:new()
+  return setmetatable({ lines = {}, highlights = {} }, Buffer)
+end
+
+-- Add a line, optionally highlighting the whole line
+function Buffer:add(text, hl_group)
+  table.insert(self.lines, text)
+  if hl_group then
+    table.insert(self.highlights, { #self.lines, hl_group, 0, -1 })
+  end
+  return self
+end
+
+-- Add highlight to the current (last) line at specific columns
+function Buffer:hl(hl_group, col_start, col_end)
+  table.insert(self.highlights, { #self.lines, hl_group, col_start, col_end })
+  return self
+end
+
+-- Get the last line's text length
+function Buffer:last_len()
+  return #self.lines[#self.lines]
+end
+
+function Buffer:get()
+  return self.lines, self.highlights
+end
+
+-- Parse the YAML config file
+local function parse_config(filepath)
   local file = io.open(filepath, 'r')
   if not file then
     return nil, 'Could not open file: ' .. filepath
@@ -14,198 +51,135 @@ local function parse_yaml(filepath)
   local content = file:read('*all')
   file:close()
 
-  local data = { sections = {} }
-  local current_section = nil
-  local current_entry = nil
-  local in_entries = false
-
-  for line in content:gmatch('[^\n]+') do
-    -- Title
-    local title = line:match('^title:%s*(.+)$')
-    if title then
-      data.title = title
-    end
-
-    -- Section start (only at 2-space indent, not inside entries)
-    local section_name = line:match('^  %- name:%s*(.+)$')
-    if section_name and not in_entries then
-      current_section = { name = section_name, entries = {} }
-      table.insert(data.sections, current_section)
-      current_entry = nil
-    end
-
-    -- Section type
-    local section_type = line:match('^%s+type:%s*(.+)$')
-    if section_type and current_section then
-      current_section.type = section_type
-    end
-
-    -- Entries marker
-    if line:match('^%s+entries:') then
-      in_entries = true
-    end
-
-    -- New section resets in_entries (check for next section at proper indent)
-    if line:match('^  %- name:') and in_entries then
-      in_entries = false
-      local new_section_name = line:match('^  %- name:%s*(.+)$')
-      if new_section_name then
-        current_section = { name = new_section_name, entries = {} }
-        table.insert(data.sections, current_section)
-        current_entry = nil
-      end
-    end
-
-    -- Entry start (key, name, or label) - deeper indent
-    if in_entries and current_section then
-      local key = line:match('^%s+%- key:%s*"(.+)"$')
-      local entry_name = line:match('^%s+%- name:%s*"(.+)"$')
-      local label = line:match('^%s+%- label:%s*"(.+)"$')
-
-      if key then
-        current_entry = { key = key }
-        table.insert(current_section.entries, current_entry)
-      elseif entry_name then
-        current_entry = { name = entry_name }
-        table.insert(current_section.entries, current_entry)
-      elseif label then
-        current_entry = { label = label }
-        table.insert(current_section.entries, current_entry)
-      end
-
-      -- Entry properties (on same or subsequent lines)
-      if current_entry then
-        local desc = line:match('desc:%s*"(.+)"$')
-        local value = line:match('value:%s*"(.+)"$')
-        local note = line:match('note:%s*"(.+)"$')
-        local arrow = line:match('arrow:%s*(.+)$')
-
-        if desc then current_entry.desc = desc end
-        if value then current_entry.value = value end
-        if note then current_entry.note = note end
-        if arrow == 'true' then current_entry.arrow = true end
-      end
-    end
+  local ok, data = pcall(yaml.parse, content)
+  if not ok then
+    return nil, 'Failed to parse YAML: ' .. tostring(data)
   end
 
   return data
 end
 
--- Build content lines from parsed YAML
-local function build_content(data)
-  local lines = {}
-  local highlights = {} -- { line_num, hl_group, col_start, col_end }
+-- Get list of available cheatsheet IDs
+local function get_cheatsheet_ids()
+  local data, _ = parse_config(config_path)
+  if not data or not data.cheatsheets then return {} end
 
-  -- Header
-  local title = data.title or 'CHEATSHEET'
+  local ids = {}
+  for _, sheet in ipairs(data.cheatsheets) do
+    table.insert(ids, sheet.id)
+  end
+  return ids
+end
+
+-- Find cheatsheet by ID
+local function find_cheatsheet(data, id)
+  for _, sheet in ipairs(data.cheatsheets) do
+    if sheet.id == id then
+      return sheet
+    end
+  end
+  return nil
+end
+
+local function build_header(buf, cs_data)
+  local title = cs_data.title or 'CHEATSHEET'
   local header_line = string.format('║%s║',
     string.rep(' ', math.floor((WIDTH - 2 - #title) / 2)) ..
     title ..
     string.rep(' ', math.ceil((WIDTH - 2 - #title) / 2)))
 
-  table.insert(lines, '╔' .. string.rep('═', WIDTH - 2) .. '╗')
-  table.insert(highlights, { #lines, 'CheatHeader', 0, -1 })
+  buf:add('╔' .. string.rep('═', WIDTH - 2) .. '╗', 'CheatHeader')
+  buf:add(header_line, 'CheatHeader')
+  buf:add('╚' .. string.rep('═', WIDTH - 2) .. '╝', 'CheatHeader')
+  buf:add('')
+end
 
-  table.insert(lines, header_line)
-  table.insert(highlights, { #lines, 'CheatHeader', 0, -1 })
+local function build_plugins_section(buf, entries)
+  local col_width = 40
+  for i = 1, #entries, 2 do
+    local e1 = entries[i]
+    local e2 = entries[i + 1]
 
-  table.insert(lines, '╚' .. string.rep('═', WIDTH - 2) .. '╝')
-  table.insert(highlights, { #lines, 'CheatHeader', 0, -1 })
+    local left = string.format('  %-14s %s', e1.name, e1.desc or '')
+    local right = e2 and string.format('%-14s %s', e2.name, e2.desc or '') or ''
 
-  table.insert(lines, '')
+    buf:add(left .. string.rep(' ', col_width - #left) .. right)
+    buf:hl('CheatPlugin', 2, 2 + #e1.name)
+    if e2 then
+      buf:hl('CheatPlugin', col_width, col_width + #e2.name)
+    end
+  end
+end
 
-  -- Sections
-  for _, section in ipairs(data.sections) do
-    -- Section header
-    local section_header = '─── ' .. section.name .. ' '
-    section_header = section_header .. string.rep('─', WIDTH - #section_header)
-    table.insert(lines, section_header)
-    table.insert(highlights, { #lines, 'CheatSection', 0, -1 })
+local function build_settings_section(buf, entries)
+  local parts = {}
+  for _, entry in ipairs(entries) do
+    table.insert(parts, { label = entry.label, value = entry.value })
+  end
 
-    -- Section entries
-    if section.type == 'plugins' then
-      -- Two-column plugin layout
-      local col_width = 40
-      for i = 1, #section.entries, 2 do
-        local e1 = section.entries[i]
-        local e2 = section.entries[i + 1]
+  for i = 1, #parts, 3 do
+    local line_parts = {}
+    local col_positions = {}
+    local col = 2
 
-        local left = string.format('  %-14s %s', e1.name, e1.desc or '')
-        local right = e2 and string.format('%-14s %s', e2.name, e2.desc or '') or ''
-        local line = left .. string.rep(' ', col_width - #left) .. right
-
-        table.insert(lines, line)
-        -- Highlight plugin names
-        table.insert(highlights, { #lines, 'CheatPlugin', 2, 2 + #e1.name })
-        if e2 then
-          table.insert(highlights, { #lines, 'CheatPlugin', col_width, col_width + #e2.name })
-        end
-      end
-
-    elseif section.type == 'settings' then
-      -- Settings layout: label: value pairs
-      local parts = {}
-      for _, entry in ipairs(section.entries) do
-        table.insert(parts, { label = entry.label, value = entry.value })
-      end
-
-      -- Render 3 per line
-      for i = 1, #parts, 3 do
-        local line_parts = {}
-        local col_positions = {}
-        local col = 2
-
-        for j = 0, 2 do
-          local p = parts[i + j]
-          if p then
-            local part = p.label .. ': ' .. p.value
-            table.insert(line_parts, part)
-            table.insert(col_positions, { col = col, label_len = #p.label, value_start = col + #p.label + 2, value_len = #p.value })
-            col = col + #part + 4
-          end
-        end
-
-        local line = '  ' .. table.concat(line_parts, '    ')
-        table.insert(lines, line)
-
-        -- Highlight values
-        for _, pos in ipairs(col_positions) do
-          table.insert(highlights, { #lines, 'CheatValue', pos.value_start, pos.value_start + pos.value_len })
-        end
-      end
-
-    else
-      -- Standard keybinding layout
-      for _, entry in ipairs(section.entries) do
-        local key = entry.key or ''
-        local desc = entry.desc or ''
-        local prefix = entry.arrow and '→ ' or ''
-        local note = entry.note and (' ' .. entry.note) or ''
-
-        local line = string.format('  %-18s    %s%s%s', key, prefix, desc, note)
-        table.insert(lines, line)
-
-        -- Highlight key
-        table.insert(highlights, { #lines, 'CheatKey', 2, 2 + #key })
-
-        -- Highlight note if present
-        if entry.note then
-          local note_start = #line - #entry.note
-          table.insert(highlights, { #lines, 'CheatDim', note_start, #line })
-        end
+    for j = 0, 2 do
+      local p = parts[i + j]
+      if p then
+        local part = p.label .. ': ' .. p.value
+        table.insert(line_parts, part)
+        table.insert(col_positions, { value_start = col + #p.label + 2, value_len = #p.value })
+        col = col + #part + 4
       end
     end
 
-    table.insert(lines, '')
+    buf:add('  ' .. table.concat(line_parts, '    '))
+    for _, pos in ipairs(col_positions) do
+      buf:hl('CheatValue', pos.value_start, pos.value_start + pos.value_len)
+    end
+  end
+end
+
+local function build_keybindings_section(buf, entries)
+  for _, entry in ipairs(entries) do
+    local key = entry.key or ''
+    local desc = entry.desc or ''
+    local prefix = entry.arrow and '→ ' or ''
+    local note = entry.note and (' ' .. entry.note) or ''
+
+    buf:add(string.format('  %-18s    %s%s%s', key, prefix, desc, note))
+    buf:hl('CheatKey', 2, 2 + #key)
+
+    if entry.note then
+      buf:hl('CheatDim', buf:last_len() - #entry.note, buf:last_len())
+    end
+  end
+end
+
+-- Build content lines from cheatsheet data
+local function build_content(cs_data)
+  local buf = Buffer:new()
+
+  build_header(buf, cs_data)
+
+  for _, section in ipairs(cs_data.sections) do
+    local section_header = '─── ' .. section.name .. ' '
+    buf:add(section_header .. string.rep('─', WIDTH - #section_header), 'CheatSection')
+
+    if section.type == 'plugins' then
+      build_plugins_section(buf, section.entries)
+    elseif section.type == 'settings' then
+      build_settings_section(buf, section.entries)
+    else
+      build_keybindings_section(buf, section.entries)
+    end
+
+    buf:add('')
   end
 
-  -- Footer
   local footer = 'Press / to search, <Esc> or q to close'
-  local footer_line = string.rep(' ', math.floor((WIDTH - #footer) / 2)) .. footer
-  table.insert(lines, footer_line)
-  table.insert(highlights, { #lines, 'CheatDim', 0, -1 })
+  buf:add(string.rep(' ', math.floor((WIDTH - #footer) / 2)) .. footer, 'CheatDim')
 
-  return lines, highlights
+  return buf:get()
 end
 
 -- Define highlight groups
@@ -227,20 +201,7 @@ local function apply_highlights(buf, highlights)
   end
 end
 
-function M.open()
-  setup_highlights()
-
-  -- Find vim-cheatsheet.yaml (symlinked to ~/.config/)
-  local config_path = vim.fn.expand('~/.config/vim-cheatsheet.yaml')
-  local data, err = parse_yaml(config_path)
-
-  if not data then
-    vim.notify('Cheatsheet: ' .. (err or 'Unknown error'), vim.log.levels.ERROR)
-    return
-  end
-
-  local lines, highlights = build_content(data)
-
+local function create_window(lines, highlights, cheatsheet_id)
   -- Calculate window size
   local height = #lines
   local ui = vim.api.nvim_list_uis()[1]
@@ -283,10 +244,273 @@ function M.open()
     })
   end
 
+  -- Close when cursor leaves the buffer
+  vim.api.nvim_create_autocmd('BufLeave', {
+    buffer = buf,
+    once = true,
+    callback = function()
+      if vim.api.nvim_win_is_valid(win) then
+        vim.api.nvim_win_close(win, true)
+      end
+    end,
+  })
+
   -- Allow search with /
   vim.api.nvim_buf_set_keymap(buf, 'n', '/', '/', { noremap = true })
   vim.api.nvim_buf_set_keymap(buf, 'n', 'n', 'n', { noremap = true })
   vim.api.nvim_buf_set_keymap(buf, 'n', 'N', 'N', { noremap = true })
+
+  -- Switch to Telescope mode with <Tab>
+  vim.keymap.set('n', '<Tab>', function()
+    vim.api.nvim_win_close(win, true)
+    M.telescope(cheatsheet_id)
+  end, { buffer = buf, noremap = true, silent = true })
 end
+
+function M.open(id)
+  setup_highlights()
+
+  local data, err = parse_config(config_path)
+  if not data or not data.cheatsheets then
+    vim.notify('Cheatsheet: ' .. (err or 'Unknown error'), vim.log.levels.ERROR)
+    return
+  end
+
+  -- Default to first cheatsheet if no id provided
+  local cheatsheet
+  if id and id ~= '' then
+    cheatsheet = find_cheatsheet(data, id)
+    if not cheatsheet then
+      vim.notify('Cheatsheet: No cheatsheet found with id "' .. id .. '"', vim.log.levels.ERROR)
+      return
+    end
+  else
+    cheatsheet = data.cheatsheets[1]
+    if not cheatsheet then
+      vim.notify('Cheatsheet: No cheatsheets defined', vim.log.levels.ERROR)
+      return
+    end
+  end
+
+  local lines, highlights = build_content(cheatsheet)
+
+  create_window(lines, highlights, cheatsheet.id)
+end
+
+
+-- Tab completion for cheatsheet IDs
+local function complete_cheatsheet(arg_lead, _, _)
+  local ids = get_cheatsheet_ids()
+  local matches = {}
+  for _, id in ipairs(ids) do
+    if id:find('^' .. arg_lead) then
+      table.insert(matches, id)
+    end
+  end
+  return matches
+end
+
+-- Load Telescope modules (lazy)
+local function load_telescope()
+  if pickers then return true end
+
+  local ok, _ = pcall(require, 'telescope')
+  if not ok then
+    vim.notify('Cheatsheet: Telescope is required for fuzzy search', vim.log.levels.ERROR)
+    return false
+  end
+
+  pickers = require('telescope.pickers')
+  finders = require('telescope.finders')
+  conf = require('telescope.config').values
+  actions = require('telescope.actions')
+  action_state = require('telescope.actions.state')
+  entry_display = require('telescope.pickers.entry_display')
+  return true
+end
+
+-- Flatten cheatsheet data into a list of searchable entries
+local function flatten_entries(cs_data)
+  local entries = {}
+
+  for _, section in ipairs(cs_data.sections) do
+    if section.type == 'plugins' then
+      for _, entry in ipairs(section.entries) do
+        table.insert(entries, {
+          section = section.name,
+          key = entry.name,
+          desc = entry.desc or '',
+          type = 'plugin',
+        })
+      end
+    elseif section.type == 'settings' then
+      for _, entry in ipairs(section.entries) do
+        table.insert(entries, {
+          section = section.name,
+          key = entry.label,
+          desc = entry.value or '',
+          type = 'setting',
+        })
+      end
+    else
+      for _, entry in ipairs(section.entries) do
+        table.insert(entries, {
+          section = section.name,
+          key = entry.key or '',
+          desc = entry.desc or '',
+          note = entry.note,
+          arrow = entry.arrow,
+          type = 'keybinding',
+        })
+      end
+    end
+  end
+
+  return entries
+end
+
+-- Open cheatsheet in Telescope picker
+function M.telescope(id)
+  if not load_telescope() then return end
+
+  local data, err = parse_config(config_path)
+  if not data or not data.cheatsheets then
+    vim.notify('Cheatsheet: ' .. (err or 'Unknown error'), vim.log.levels.ERROR)
+    return
+  end
+
+  local cheatsheet
+  if id and id ~= '' then
+    cheatsheet = find_cheatsheet(data, id)
+    if not cheatsheet then
+      vim.notify('Cheatsheet: No cheatsheet found with id "' .. id .. '"', vim.log.levels.ERROR)
+      return
+    end
+  else
+    cheatsheet = data.cheatsheets[1]
+    if not cheatsheet then
+      vim.notify('Cheatsheet: No cheatsheets defined', vim.log.levels.ERROR)
+      return
+    end
+  end
+
+  local entries = flatten_entries(cheatsheet)
+
+  local displayer = entry_display.create({
+    separator = ' ',
+    items = {
+      { width = 20 },  -- key
+      { width = 15 },  -- section
+      { remaining = true },  -- description
+    },
+  })
+
+  local make_display = function(entry)
+    local desc = entry.value.desc
+    if entry.value.arrow then
+      desc = '→ ' .. desc
+    end
+    if entry.value.note then
+      desc = desc .. ' ' .. entry.value.note
+    end
+
+    return displayer({
+      { entry.value.key, 'TelescopeResultsIdentifier' },
+      { entry.value.section, 'TelescopeResultsComment' },
+      { desc, 'TelescopeResultsNormal' },
+    })
+  end
+
+  pickers.new({}, {
+    prompt_title = cheatsheet.title or 'Cheatsheet',
+    finder = finders.new_table({
+      results = entries,
+      entry_maker = function(entry)
+        local ordinal = entry.key .. ' ' .. entry.section .. ' ' .. entry.desc
+        return {
+          value = entry,
+          display = make_display,
+          ordinal = ordinal,
+        }
+      end,
+    }),
+    sorter = conf.generic_sorter({}),
+    attach_mappings = function(prompt_bufnr, map)
+      actions.select_default:replace(function()
+        actions.close(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        if selection and selection.value.key then
+          vim.fn.setreg('+', selection.value.key)
+          vim.notify('Copied: ' .. selection.value.key, vim.log.levels.INFO)
+        end
+      end)
+
+      -- Switch to float mode with <Tab>
+      map({ 'i', 'n' }, '<Tab>', function()
+        actions.close(prompt_bufnr)
+        M.open(cheatsheet.id)
+      end)
+
+      return true
+    end,
+  }):find()
+end
+
+-- Open cheatsheet using configured display mode
+function M.show(id)
+  local data, err = parse_config(config_path)
+  if not data or not data.cheatsheets then
+    vim.notify('Cheatsheet: ' .. (err or 'Unknown error'), vim.log.levels.ERROR)
+    return
+  end
+
+  local cheatsheet
+  if id and id ~= '' then
+    cheatsheet = find_cheatsheet(data, id)
+    if not cheatsheet then
+      vim.notify('Cheatsheet: No cheatsheet found with id "' .. id .. '"', vim.log.levels.ERROR)
+      return
+    end
+  else
+    cheatsheet = data.cheatsheets[1]
+    if not cheatsheet then
+      vim.notify('Cheatsheet: No cheatsheets defined', vim.log.levels.ERROR)
+      return
+    end
+  end
+
+  local display_mode = cheatsheet.display or 'telescope'
+
+  if display_mode == 'float' then
+    M.open(id)
+  else
+    M.telescope(id)
+  end
+end
+
+-- Create user commands with completion
+vim.api.nvim_create_user_command('Cheatsheet', function(opts)
+  M.show(opts.args)
+end, {
+  nargs = '?',
+  complete = complete_cheatsheet,
+  desc = 'Open cheatsheet using configured display mode',
+})
+
+vim.api.nvim_create_user_command('CheatsheetFloat', function(opts)
+  M.open(opts.args)
+end, {
+  nargs = '?',
+  complete = complete_cheatsheet,
+  desc = 'Open cheatsheet in floating window (optional: specify id)',
+})
+
+vim.api.nvim_create_user_command('CheatsheetTelescope', function(opts)
+  M.telescope(opts.args)
+end, {
+  nargs = '?',
+  complete = complete_cheatsheet,
+  desc = 'Open cheatsheet in Telescope (optional: specify id)',
+})
 
 return M

@@ -21,6 +21,11 @@ return {
   'coderifous/textobj-word-column.vim', -- provides vic, vac, etc.
   'junegunn/fzf',
   'junegunn/fzf.vim',
+  {
+    'nvim-telescope/telescope.nvim',
+    tag = '0.1.8',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+  },
   'itspriddle/vim-marked',
   -- 'sheerun/vim-polyglot',
   'tpope/vim-rails',
@@ -37,6 +42,14 @@ return {
     },
     config = function()
       require("claude-code").setup()
+    end
+  },
+  {
+    dir = '~/Repos/cheet.nvim',
+    config = function()
+      require('cheet').setup({
+        paths = { '~/.config/vim-cheatsheet.yaml' }
+      })
     end
   },
   {
