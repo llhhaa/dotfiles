@@ -78,6 +78,29 @@ alias vim='nvim'
 
 alias claude-personal='CLAUDE_CONFIG_DIR=~/.claude-personal claude'
 
+# Start or resume a Claude session tied to the current git branch.
+# Uses a deterministic UUID derived from the branch name so the same
+# branch always maps to the same session.
+function cb() {
+  local repo=$(basename `git rev-parse --show-toplevel`)
+  local branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+  if [[ -z "$branch" ]]; then
+    echo "Not on a git branch. Starting claude normally."
+    claude "$@"
+    return
+  fi
+
+  # based on claude's slug derivation, but not load-bearing outside this command
+  local uuid=$(python3 -c "import uuid; print(uuid.uuid5(uuid.NAMESPACE_DNS, '$repo-$branch'))")
+
+  echo "Session for: $repo-$branch ($uuid)"
+  claude --resume "$uuid" "$@" 2>/dev/null
+  if [[ $? -ne 0 ]]; then
+    echo "No existing session found. Starting new session."
+    claude --session-id "$uuid" "$@"
+  fi
+}
+
 function n() {
   nvim $1
 }
