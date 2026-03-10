@@ -22,3 +22,6 @@ codeintel
 gemrc
 .irb_history
 .irbrc-local.rb
+
+# Claude files
+.claude/settings.local.json
