@@ -17,6 +17,7 @@ vim.g.maplocalleader = '\\' -- Same for `maplocalleader`
 local plugins_manifest = require('plugins_manifest')
 require('lazy').setup(plugins_manifest)
 require('gen_prompts') -- custom prompts for gen llm interface
+require('schema_popup') -- :Schema floating window for ActiveRecord models
 
 -- general settings
 vim.opt.number = true
@@ -150,6 +151,8 @@ vim.keymap.set({'n', 'v'}, '<Leader>B', ":'<,'>GBrowse!<Cr>")
 
 -- Open alternate file in below split
 vim.keymap.set('n', '<Leader>S', ':sp<Cr>:A<Cr><C-w>J')
+
+vim.keymap.set('n', '<Leader>s', ':Schema<CR>', { desc = 'Show model schema', silent = true })
 
 -- yank filename
 vim.keymap.set('n', '<leader>yf', function()
