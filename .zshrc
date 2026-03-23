@@ -14,12 +14,12 @@ source $ZSH/oh-my-zsh.sh
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # make sure keys are added to the agent
-if ! ssh-add -l | grep -q "luke.abel@simplethread.com"; then
+if ! ssh-add -l | grep -q "luke.abel@agilebits.com"; then
   ssh-add --apple-use-keychain ~/.ssh/id_ed25519
 fi
-if ! ssh-add -l | grep -q "luke.abel@gmail.com"; then
-  ssh-add --apple-use-keychain ~/.ssh/id_ed25519_pers
-fi
+# if ! ssh-add -l | grep -q "luke.abel@gmail.com"; then
+#   ssh-add --apple-use-keychain ~/.ssh/id_ed25519_pers
+# fi
 
 # initialize fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
@@ -68,15 +68,15 @@ fi
 
 ## Aliases
 # alias glog='git log --graph --oneline --decorate'
-alias gpuo='git push -u origin $(current_branch)' # also gpsup
 alias be='bundle exec'
 alias rake='noglob rake' # required for certain strap tasks
 alias linecount='tee >(wc -l | xargs echo)' # for piping ripgrep
 alias caff='caffdown 36000'
 alias baudit='bundle exec bundle-audit update && bundle exec bundle-audit check'
-alias vim='nvim'
 
 alias claude-personal='CLAUDE_CONFIG_DIR=~/.claude-personal claude'
+
+alias k2-agent='./bin/agent -- -a -p -u "https://app.kolide.test"'
 
 # Start or resume a Claude session tied to the current git branch.
 # Uses a deterministic UUID derived from the branch name so the same
@@ -107,32 +107,6 @@ function n() {
 
 function gcam() {
   git commit -am $1
-}
-
-function git-log-clean() {
-  local log=$(git --no-pager log --pretty="%s. %b" --author=luke.abel@simplethread.com --since=$1 --until=$2 --all --no-merges)
-  if [[ -n "$log" ]]; then
-    echo "$log" | awk '!/^index on/' | awk '!x[$0]++' | sed 's/\*/\'$'\n\*/g' | sed '/^$/d' | sed '1!G;h;$!d'
-  else
-    echo "No commits found"
-  fi
-}
-function git-echo-copy() {
-  local yesterday=$(git-log-clean $1 $2)
-  echo "$yesterday" 
-
-  if [[ "$yesterday" != "No commits found" ]]; then
-    git-log-clean $1 $2 | pbcopy
-  fi
-}
-
-function gitToday() { git-echo-copy midnight }
-function gitYesterday() { git-echo-copy yesterday.midnight midnight }
-
-function timestamp () {
-  timestamp=$(date +'%Y%m%d%H%M%S')
-  echo $timestamp
-  echo $timestamp | pbcopy
 }
 
 ## Functions
@@ -347,6 +321,4 @@ if [ "$(uname -s)" = "Darwin" ]; then
 fi
 
 
-export PATH="$PATH:/Users/lukeabel/Repos/devops_utilities"
-alias devops='RBENV_VERSION=3.3.10 devops'
 export PATH="$HOME/.local/bin:$PATH"
