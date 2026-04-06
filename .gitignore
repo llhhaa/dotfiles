@@ -25,3 +25,16 @@ gemrc
 
 # Claude files
 .claude/settings.local.json
+.claude/worktrees
+.claude/projects
+.claude/todos
+.claude/.mcp.json
+.claude/backups/
+.claude/paste-cache/
+.claude/policy-limits.json
+.claude/sessions/
+.claude/tasks/
+CLAUDE.local.md
+
+# Logs
+logs/
