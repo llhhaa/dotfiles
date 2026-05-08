@@ -110,6 +110,41 @@ function gcam() {
 }
 
 ## Functions
+# Start tmux with a standard layout:
+# Window 0: tall left pane (~63%), two stacked right panes
+# Window 1: two equal columns, right column split top/bottom
+function tmux-dev() {
+  local session="${1:-dev}"
+
+  if [[ -n "$TMUX" ]]; then
+    echo "Already in a tmux session."
+    return 1
+  fi
+
+  if tmux has-session -t "$session" 2>/dev/null; then
+    tmux attach -t "$session"
+    return
+  fi
+
+  # Window 0: left pane + two stacked right panes
+  # Use explicit cols and lines so we get an accurate split
+  tmux new-session -d -s "$session" -x "$(tput cols)" -y "$(tput lines)"
+  tmux split-window -h -p 35 -t "$session" 
+  tmux split-window -v -t "$session"
+  tmux select-pane -t "$session:.0"
+
+  # Window 1: 50/50 split, then split right pane top/bottom
+  tmux new-window -t "$session"
+  tmux split-window -h -p 50 -t "$session"
+  tmux split-window -v -t "$session"
+  tmux select-pane -t "$session:.0"
+
+  # Start on window 0
+  tmux select-window -t "$session:0"
+
+  tmux attach -t "$session"
+}
+
 # find filenames that look like arg
 function rgg() {
   rg --iglob "*$1*" -g '!/Library/' --files
