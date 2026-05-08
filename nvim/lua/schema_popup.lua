@@ -1,3 +1,5 @@
+-- This script uses Neovim's native float to display the table definition in the
+-- schema.rb of a Rails app. Use in place of tools like annotate.rb
 local M = {}
 
 local IRREGULARS = {
@@ -32,6 +34,7 @@ local function table_name_from_buffer()
   return table.concat(parts, '_')
 end
 
+-- TODO: support structure.rb, too
 local function find_schema()
   local root = vim.fn.systemlist('git rev-parse --show-toplevel')[1]
   if not root or root == '' then return nil end
