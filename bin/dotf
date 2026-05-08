@@ -1,0 +1,137 @@
+#!/bin/bash
+
+set -e
+
+SOURCE_PATH="${BASH_SOURCE[0]}"
+while [ -L "$SOURCE_PATH" ]; do
+    SOURCE_DIR="$(cd -P "$(dirname "$SOURCE_PATH")" && pwd)"
+    SOURCE_PATH="$(readlink "$SOURCE_PATH")"
+    case "$SOURCE_PATH" in
+        /*) ;;
+        *) SOURCE_PATH="$SOURCE_DIR/$SOURCE_PATH" ;;
+    esac
+done
+
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE_PATH")" && pwd)"
+DOTFILES_DIR="$(dirname "$SCRIPT_DIR")"
+export DOTFILES_DIR
+LOGS_DIR="$DOTFILES_DIR/logs"
+
+init_logging() {
+    mkdir -p "$LOGS_DIR"
+    if command -v gdate &> /dev/null; then
+        LOG_TIMESTAMP=$(gdate '+%Y-%m-%d_%H-%M-%S')
+    else
+        LOG_TIMESTAMP=$(date '+%Y-%m-%d_%H-%M-%S')
+    fi
+    LOG_FILE="$LOGS_DIR/dotf_${LOG_TIMESTAMP}.log"
+    export LOG_FILE
+}
+
+debug() {
+    if command -v gdate &> /dev/null; then
+        timestamp=$(gdate '+%H:%M:%S.%3N')
+    else
+        timestamp=$(date '+%H:%M:%S')
+    fi
+    local message="[$timestamp] $1"
+
+    echo "$message" >> "$LOG_FILE"
+
+    if [ "${DEBUG:-false}" = "true" ]; then
+        echo "$message"
+    fi
+}
+
+announce() {
+    if command -v gum &> /dev/null; then
+        gum style --bold --foreground 212 "$1"
+    else
+        echo "==> $1"
+    fi
+}
+
+warn() {
+    if command -v gum &> /dev/null; then
+        gum style --foreground 214 "$1"
+    else
+        echo "$1"
+    fi
+}
+
+ensure_homebrew_env() {
+    if command -v brew &> /dev/null; then
+        eval "$(brew shellenv bash)"
+    elif [ -x /opt/homebrew/bin/brew ]; then
+        eval "$(/opt/homebrew/bin/brew shellenv bash)"
+    elif [ -x /usr/local/bin/brew ]; then
+        eval "$(/usr/local/bin/brew shellenv bash)"
+    fi
+}
+
+ensure_mise_env() {
+    if [ -d "$HOME/.local/bin" ]; then
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+
+    if command -v mise &> /dev/null; then
+        eval "$(mise activate bash)"
+    fi
+}
+
+cmd_run() {
+    init_logging
+    debug "Starting dotf run command"
+    "$SCRIPT_DIR/bootstrap"
+    ensure_homebrew_env
+    ensure_mise_env
+
+    cd "$DOTFILES_DIR"
+    ruby -r ./lib/dotfiles.rb -e "Dotfiles::Runner.new('$LOG_FILE').run"
+
+    debug "Run complete"
+}
+
+cmd_help() {
+    cat <<EOF
+dotf - Dotfiles management tool
+
+Usage: dotf <command> [options]
+
+Commands:
+  run       Set up development environment from scratch
+  help      Show this help message
+
+Logging:
+  Logs are always written to logs/ directory with timestamped filenames.
+  Set DEBUG=true to also output logs to the console.
+
+Examples:
+  dotf run                              # Initial setup
+  DEBUG=true dotf run                   # Run with debug output to console
+EOF
+}
+
+main() {
+    if [ $# -eq 0 ]; then
+        cmd_help
+        exit 1
+    fi
+
+    case "$1" in
+        run)
+            cmd_run
+            ;;
+        help|--help|-h)
+            cmd_help
+            ;;
+        *)
+            echo "Error: Unknown command '$1'"
+            echo ""
+            cmd_help
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"

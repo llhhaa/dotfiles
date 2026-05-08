@@ -1,0 +1,85 @@
+---
+dotfiles_repo: https://github.com/llhhaa/dotfiles.git
+master_hostname: Lukes-MBP.local
+standard_folders:
+- ~/repos
+- ~/personal
+packages:
+  gh: { brew: gh, debian: null }
+  ripgrep: { brew: ripgrep, debian: ripgrep }
+  fzf: { brew: fzf, debian: null }
+debian_sources:
+  - name: gierens
+    repo: http://deb.gierens.de
+    suite: stable
+    components:
+      - main
+    key_url: https://raw.githubusercontent.com/eza-community/eza/main/deb.asc
+  - name: azlux
+    repo: http://packages.azlux.fr/debian/
+    suite: stable
+    components:
+      - main
+    key_url: https://azlux.fr/repo.gpg
+  - name: charm
+    repo: https://repo.charm.sh/apt/
+    suite: "*"
+    components:
+      - "*"
+    key_url: https://repo.charm.sh/apt/gpg.key
+  - name: 1password
+    line: "deb [arch=amd64 signed-by=/usr/share/keyrings/1password-archive-keyring.gpg] https://downloads.1password.com/linux/debian/amd64 stable main"
+    key_url: https://downloads.1password.com/linux/keys/1password.asc
+  - name: google-chrome
+    line: "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome-archive-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main"
+    key_url: https://dl.google.com/linux/linux_signing_key.pub
+  - name: mise
+    line: "deb [signed-by=/usr/share/keyrings/mise-archive-keyring.gpg] https://mise.jdx.dev/deb stable main"
+    key_url: https://mise.jdx.dev/gpg-key.pub
+debian_non_apt_packages:
+  - ghostty
+debian_snap_packages: []
+brew:
+  casks:
+  - zoom
+applications:
+- name: 1Password
+  path: "/Applications/1Password.app"
+  brew_cask: 1password
+  cli_tap: 1password/tap/1password-cli
+unmanaged_apps:
+- "/Applications/Doppler.app"
+animation_settings:
+  NSGlobalDomain:
+    NSAutomaticWindowAnimationsEnabled: 0
+    NSScrollAnimationEnabled: 0
+    QLPanelAnimationDuration: 0
+    NSScrollViewRubberbanding: 0
+    NSDocumentRevisionsWindowTransformAnimation: 0
+    NSToolbarFullScreenAnimationDuration: 0
+    NSBrowserColumnAnimationSpeedMultiplier: 0
+  com.apple.Accessibility:
+    ReduceMotionEnabled: 1
+  com.apple.dock:
+    autohide-time-modifier: 0
+    autohide-delay: 0
+    springboard-show-duration: 0
+    springboard-hide-duration: 0
+    springboard-page-duration: 0
+    launchanim: 0
+    mineffect: "scale"
+  com.apple.finder:
+    DisableAllAnimations: 1
+screenshot_settings:
+  com.apple.screencapture:
+    location: "~/Documents/Inbox"
+login_items:
+- "/Applications/Trimmy.app"
+config_directory_items:
+- fish/config.fish
+- fish/functions/
+file_associations:
+  com.microsoft.VSCode:
+  - ".md"
+  company.thebrowser.Browser:
+  - ".svg"

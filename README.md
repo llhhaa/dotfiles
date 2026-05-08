@@ -1,11 +1,17 @@
 # l-abel-dotfiles
 not just dotfiles!
 
-to create symlinks for dotfiles, run:
+To create symlinks for dotfiles, run:
 
 ```shell
 ln -sv /path/to/dotfiles/.mydotfile ~
 ```
+
+## Automated Setup
+
+`bin/dotf run` provisions the machine from `config/config.yml` via a small Ruby step runner. It bootstraps Homebrew/mise/Ruby/gum, then runs each step in `lib/dotfiles/steps/` in topo-sorted order, skipping any that are already complete.
+
+See [`docs/setup.md`](docs/setup.md) for the full layout, the step contract, and how to add a new step.
 
 ## vim
 #### Highlights:
@@ -27,7 +33,7 @@ function! Whitespace() " whitespace and endline cleanup function
   endif
 endfunction
 ```
-    
+
 .vimrc toggle method, which does the following:
 * if .vimrc is not open, open it in a :$tabnew (tab at end of tab list)
 * if .vimrc is open, switchbuf over to it (currently follows your switchbuf setting)
@@ -67,10 +73,3 @@ endfunction
 
 ## tmux
 A basic setup inspired by Brian P. Hogan's *tmux 2*.
-
-## Shell Scripts
-### goodmorning.sh
-Creates two tmux sessions - `goodmorning`, for running Eclipse and Caffeinate, and `workspace`, a centralized window for accessing various project directories and tools.
-
-### goodnight.sh
-The counterparty to `goodmorning.sh`, closes the two tmux sessions created by the script.

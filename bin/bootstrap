@@ -1,0 +1,170 @@
+#!/bin/bash
+
+set -e
+
+is_macos() {
+    [ "$(uname -s)" = "Darwin" ]
+}
+
+debug() {
+    if [ "${DEBUG:-false}" = "true" ]; then
+        if command -v gdate &> /dev/null; then
+            timestamp=$(gdate '+%H:%M:%S.%3N')
+        else
+            timestamp=$(date '+%H:%M:%S')
+        fi
+        echo "[$timestamp] $1"
+    fi
+}
+
+brew_quiet() {
+    if [ "${DEBUG:-false}" = "true" ]; then
+        HOMEBREW_NO_AUTO_UPDATE=1 brew "$@"
+    else
+        HOMEBREW_NO_AUTO_UPDATE=1 brew "$@" >/dev/null 2>&1
+    fi
+}
+
+bootstrap_homebrew() {
+    if ! is_macos; then
+        return 0
+    fi
+
+    if ! command -v brew &> /dev/null; then
+        debug "Installing Homebrew..."
+        NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+
+    local brew_bin=""
+    if command -v brew &> /dev/null; then
+        brew_bin="$(command -v brew)"
+    elif [ -x /opt/homebrew/bin/brew ]; then
+        brew_bin="/opt/homebrew/bin/brew"
+    elif [ -x /usr/local/bin/brew ]; then
+        brew_bin="/usr/local/bin/brew"
+    fi
+
+    if [ -z "$brew_bin" ]; then
+        echo "Error: Homebrew installation completed but 'brew' was not found"
+        exit 1
+    fi
+
+    local zprofile_path="$HOME/.zprofile"
+    local shellenv_line
+    shellenv_line="$(printf 'eval "$(%s shellenv)"' "$brew_bin")"
+
+    if ! grep -Fq "brew shellenv" "$zprofile_path" 2>/dev/null; then
+        printf '%s\n' "$shellenv_line" >> "$zprofile_path"
+    fi
+
+    eval "$("$brew_bin" shellenv -s bash)"
+}
+
+bootstrap_mise() {
+    if ! command -v mise &> /dev/null; then
+        debug "Installing mise..."
+        if is_macos; then
+            brew_quiet install mise
+        else
+            curl -fsSL https://mise.jdx.dev/install.sh | sh
+            if [ -d "$HOME/.local/bin" ]; then
+                export PATH="$HOME/.local/bin:$PATH"
+            fi
+        fi
+    else
+        debug "mise already installed"
+    fi
+
+    if [ -f ".mise.toml" ]; then
+        debug "Trusting mise config..."
+        mise trust --yes 2>/dev/null || true
+    fi
+
+    eval "$(mise activate bash)"
+}
+
+bootstrap_ruby() {
+    if [ "${RUBY_VERSION_MANAGER:-rbenv}" = "mise" ]; then
+        bootstrap_ruby_mise
+    else
+        bootstrap_ruby_rbenv
+    fi
+}
+
+bootstrap_ruby_rbenv() {
+    if ! command -v rbenv &> /dev/null; then
+        debug "Installing rbenv..."
+        brew_quiet install rbenv ruby-build
+    fi
+
+    eval "$(rbenv init - bash)"
+
+    if ruby_sufficient; then
+        return
+    fi
+
+    local latest_stable
+    latest_stable=$(rbenv install -l 2>/dev/null | grep -E '^\s*[0-9]+\.[0-9]+\.[0-9]+$' | tail -1 | tr -d ' ')
+
+    debug "Installing Ruby $latest_stable via rbenv..."
+    rbenv install --skip-existing "$latest_stable"
+    rbenv global "$latest_stable"
+
+    debug "Ruby bootstrap complete."
+}
+
+# Set RUBY_VERSION_MANAGER=mise to use mise instead.
+bootstrap_ruby_mise() {
+    if ruby_sufficient; then
+        return
+    fi
+
+    debug "Installing Ruby via mise..."
+    mise use --global ruby@latest >/dev/null
+    mise install ruby@latest >/dev/null
+
+    debug "Ruby bootstrap complete."
+}
+
+ruby_sufficient() {
+    if command -v ruby &> /dev/null; then
+        local current_version
+        current_version=$(ruby -v | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+        local major_version
+        major_version=$(echo "$current_version" | cut -d. -f1)
+
+        if [ "$major_version" -ge 3 ]; then
+            debug "Ruby $current_version is sufficient (>= 3.x)"
+            return 0
+        fi
+    fi
+    return 1
+}
+
+bootstrap_gum() {
+    if ! command -v gum &> /dev/null; then
+        if command -v mise &> /dev/null; then
+            debug "Installing gum via mise..."
+            mise use --global gum@latest >/dev/null
+            mise install gum@latest >/dev/null
+        elif is_macos; then
+            debug "Installing gum via brew..."
+            brew_quiet install gum
+        fi
+    else
+        debug "gum already installed"
+    fi
+}
+
+main() {
+    debug "Bootstrapping development environment..."
+
+    bootstrap_homebrew
+    bootstrap_mise
+    bootstrap_ruby
+    bootstrap_gum
+
+    debug "Bootstrap complete."
+}
+
+main "$@"
