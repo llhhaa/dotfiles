@@ -34,6 +34,7 @@ gemrc
 .claude/policy-limits.json
 .claude/sessions/
 .claude/tasks/
+.claude/.last-cleanup
 CLAUDE.local.md
 
 # Logs
