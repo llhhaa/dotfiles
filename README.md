@@ -1,15 +1,11 @@
 # l-abel-dotfiles
 not just dotfiles!
 
-To create symlinks for dotfiles, run:
-
-```shell
-ln -sv /path/to/dotfiles/.mydotfile ~
-```
-
 ## Automated Setup
 
-`bin/dotf run` provisions the machine from `config/config.yml` via a small Ruby step runner. It bootstraps Homebrew/mise/Ruby/gum, then runs each step in `lib/dotfiles/steps/` in topo-sorted order, skipping any that are already complete.
+`bin/dotf run` provisions the machine from `config/config.yml` via a small Ruby step runner. It bootstraps Homebrew/mise/Ruby/gum, then runs each step in `lib/dotfiles/steps/` in topo-sorted order, skipping any that are already complete (including symlinking the tracked dotfiles into `~`).
+
+`bin/test` runs the Minitest suite under `test/`.
 
 See [`docs/setup.md`](docs/setup.md) for the full layout, the step contract, and how to add a new step.
 

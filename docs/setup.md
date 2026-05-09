@@ -17,8 +17,8 @@ bin/dotf help
 1. Opens a timestamped log file under `logs/` (always written; `DEBUG=true` additionally tees to stdout).
 2. Invokes `bin/bootstrap` to install shell prerequisites — Homebrew (macOS only), mise, Ruby ≥ 3.x (via `rbenv` by default, or `mise` if `RUBY_VERSION_MANAGER=mise`), and `gum`.
 3. Re-evaluates the Homebrew and mise environments so freshly-installed binaries are on `PATH`.
-4. Loads `lib/dotfiles.rb`, which auto-requires every step under `lib/dotfiles/steps/`.
-5. `Dotfiles::Runner` topologically sorts steps by their `depends_on` declarations, runs each one in order (skipping any whose `complete?` already returns true, or whose `macos_only` / `debian_only` gate doesn't match the host), then renders a results table via `gum`.
+4. Loads `lib/dotfiles.rb`, which auto-requires every step under `lib/dotfiles/steps/`. Files are sorted by directory depth so foundational top-level steps (e.g. `SymlinkDotfilesStep`) load before nested platform-specific ones (e.g. `steps/mac/*`); within the same depth the order is alphabetical.
+5. `Dotfiles::Runner` topologically sorts steps by their `depends_on` declarations (load order is the tiebreaker), runs each one in order (skipping any whose `complete?` already returns true, or whose `macos_only` / `debian_only` gate doesn't match the host), then renders a results table via `gum`.
 
 The runner is designed to be re-runnable — `complete?` is the contract that lets a step be skipped on subsequent runs.
 
@@ -28,7 +28,8 @@ The runner is designed to be re-runnable — `complete?` is the contract that le
 | --- | --- |
 | `bin/dotf` | CLI entry point (`run`, `help`). Sets up logging, calls `bootstrap`, then shells into the Ruby runner. |
 | `bin/bootstrap` | Shell prerequisites — Homebrew, mise, Ruby (≥ 3.x), gum. Idempotent; safe to re-run. |
-| `config/config.yml` | Declarative inputs: `dotfiles_repo`, `master_hostname`, `standard_folders`, cross-platform `packages`, `debian_sources` / `debian_non_apt_packages` / `debian_snap_packages`, `brew.casks`, `applications`, `unmanaged_apps`, `animation_settings`, `screenshot_settings`, `login_items`, `config_directory_items`, `file_associations`. |
+| `bin/test` | Minitest runner. Loads every `test/**/*_test.rb`; forwards Minitest flags like `--name <pattern>` and `--seed <n>`. |
+| `config/config.yml` | Declarative inputs: `dotfiles_repo`, `master_hostname`, `standard_folders`, `symlinks`, cross-platform `packages`, `debian_sources` / `debian_non_apt_packages` / `debian_snap_packages`, `brew.casks`, `applications`, `unmanaged_apps`, `animation_settings`, `screenshot_settings`, `login_items`, `config_directory_items`, `file_associations`. |
 | `lib/dotfiles.rb` | Top-level entry. Triggers `Loader.load!`, owns the log file handle, exposes `Dotfiles.debug` / `debug_benchmark` / `command_exists?` / `determine_dotfiles_dir`. |
 | `lib/dotfiles/loader.rb` | Adds `lib/dotfiles` to `$LOAD_PATH`, requires core classes, then globs and requires every file under `steps/`. |
 | `lib/dotfiles/runner.rb` | Orchestrates execution: builds step params, runs steps serially in topo order, then collects per-step results in parallel threads and hands them to the output formatter. |
@@ -38,8 +39,10 @@ The runner is designed to be re-runnable — `complete?` is the contract that le
 | `lib/dotfiles/system_adapter.rb` | Thin wrapper around the shell (`Open3`), filesystem (`FileUtils`), and platform detection (`macos?`, `debian?`). Mockable in tests. |
 | `lib/dotfiles/config.rb` | Loads `config/config.yml` once and exposes typed accessors (`dotfiles_repo`, `home`, `brew_casks`, `applications`, plus `[]` / `fetch`). |
 | `lib/dotfiles/output_formatter.rb` | Renders the final results table, errors, warnings, and notices via `gum table` and `gum style`. Exits 1 if any step is incomplete. |
-| `lib/dotfiles/steps/mac/` | One file per step. Currently `ConfigureScreenshotsStep` and `DisableAnimationsStep` — both `DefaultsConfigurable`. |
+| `lib/dotfiles/steps/symlink_dotfiles_step.rb` | Cross-platform. Reads the `symlinks` list from `config.yml` and links each entry into `$HOME`, backing up real files to `<dest>.bak` and replacing stale symlinks. |
+| `lib/dotfiles/steps/mac/` | macOS-only steps. Currently `ConfigureScreenshotsStep` and `DisableAnimationsStep` — both `DefaultsConfigurable`. |
 | `mise.toml` | Pins `gum` for mise users (the `gum` CLI is required by the output formatter). |
+| `test/` | Minitest suite. `test_helper.rb` holds shared boot + a `recording_formatter` helper. Mirrors `lib/` layout (`test/dotfiles/steps/foo_step_test.rb` ↔ `lib/dotfiles/steps/foo_step.rb`). |
 | `logs/` | Timestamped per-run log files. Gitignored. |
 
 ## Adding a new step
@@ -75,3 +78,13 @@ Contract:
 ## Configuration
 
 `config/config.yml` is the single source of truth for what gets installed and configured. Adding a new macOS default is usually a two-step change: append the `(domain, key, value)` entry under the appropriate config key (e.g. `animation_settings`), and — if the key is new — wire it up in a step.
+
+## Tests
+
+```shell
+bin/test                              # run everything
+bin/test --name test_pattern_subset   # filter by name (Minitest --name)
+bin/test --seed 12345                 # reproduce an ordering
+```
+
+Tests live under `test/` mirroring `lib/`. `test/test_helper.rb` provides shared boot (`require "minitest/autorun"`, load-path setup, `Dotfiles` requires) and a `recording_formatter(results, system_calls:, exit_codes:)` helper that returns an `OutputFormatter` whose `popen_call` / `system_call` / `exit_call` are lambdas recording into the supplied arrays — useful for asserting on rendered output without shelling out to `gum`.
