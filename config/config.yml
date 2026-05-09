@@ -4,6 +4,16 @@ master_hostname: Lukes-MBP.local
 standard_folders:
 - ~/repos
 - ~/personal
+symlinks:
+- { src: .zshrc,             dest: ~/.zshrc }
+- { src: .tmux.conf,         dest: ~/.tmux.conf }
+- { src: .vimrc,             dest: ~/.vimrc }
+- { src: .rgignore,          dest: ~/.rgignore }
+- { src: .ripgreprc,         dest: ~/.ripgreprc }
+- { src: nvim,               dest: ~/.config/nvim }
+- { src: vim-cheatsheet.yaml, dest: ~/.config/vim-cheatsheet.yaml }
+- { src: kitty.conf,         dest: ~/.config/kitty/kitty.conf }
+- { src: .claude,            dest: ~/.claude }
 packages:
   gh: { brew: gh, debian: null }
   ripgrep: { brew: ripgrep, debian: ripgrep }

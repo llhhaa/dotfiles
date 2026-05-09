@@ -30,6 +30,7 @@ gemrc
 .claude/todos
 .claude/.mcp.json
 .claude/backups/
+.claude/mcp-needs-auth-cache.json
 .claude/paste-cache/
 .claude/policy-limits.json
 .claude/sessions/
