@@ -60,6 +60,10 @@ class Dotfiles
       FileUtils.cp_r(src, dest)
     end
 
+    def mv(src, dest)
+      FileUtils.mv(src, dest)
+    end
+
     def rm_rf(path)
       FileUtils.rm_rf(path)
     end

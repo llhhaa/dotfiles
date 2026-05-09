@@ -24,7 +24,9 @@ class Dotfiles
     end
 
     def self.step_files
-      Dotfiles::SystemAdapter.new.glob(File.join(__dir__, "steps", "**", "*.rb")).sort
+      # Sort by depth then name so foundational top-level steps load (and run) before nested platform-specific ones.
+      files = Dotfiles::SystemAdapter.new.glob(File.join(__dir__, "steps", "**", "*.rb"))
+      files.sort_by { |path| [path.count("/"), path] }
     end
 
     def self.require_runtime
