@@ -40,7 +40,7 @@ The runner is designed to be re-runnable — `complete?` is the contract that le
 | `lib/dotfiles/config.rb` | Loads `config/config.yml` once and exposes typed accessors (`dotfiles_repo`, `home`, `brew_casks`, `applications`, plus `[]` / `fetch`). |
 | `lib/dotfiles/output_formatter.rb` | Renders the final results table, errors, warnings, and notices via `gum table` and `gum style`. Exits 1 if any step is incomplete. |
 | `lib/dotfiles/steps/symlink_dotfiles_step.rb` | Cross-platform. Reads the `symlinks` list from `config.yml` and links each entry into `$HOME`, backing up real files to `<dest>.bak` and replacing stale symlinks. |
-| `lib/dotfiles/steps/mac/` | macOS-only steps. Currently `ConfigureScreenshotsStep` and `DisableAnimationsStep` — both `DefaultsConfigurable`. |
+| `lib/dotfiles/steps/mac/` | macOS-only steps. `ConfigureScreenshotsStep` and `DisableAnimationsStep` (both `DefaultsConfigurable`); `InstallBrewCasksStep` (diffs `config.brew_casks` against `brew list --cask` and installs the missing ones). |
 | `mise.toml` | Pins `gum` for mise users (the `gum` CLI is required by the output formatter). |
 | `test/` | Minitest suite. `test_helper.rb` holds shared boot + a `recording_formatter` helper. Mirrors `lib/` layout (`test/dotfiles/steps/foo_step_test.rb` ↔ `lib/dotfiles/steps/foo_step.rb`). |
 | `logs/` | Timestamped per-run log files. Gitignored. |
@@ -87,4 +87,8 @@ bin/test --name test_pattern_subset   # filter by name (Minitest --name)
 bin/test --seed 12345                 # reproduce an ordering
 ```
 
-Tests live under `test/` mirroring `lib/`. `test/test_helper.rb` provides shared boot (`require "minitest/autorun"`, load-path setup, `Dotfiles` requires) and a `recording_formatter(results, system_calls:, exit_codes:)` helper that returns an `OutputFormatter` whose `popen_call` / `system_call` / `exit_call` are lambdas recording into the supplied arrays — useful for asserting on rendered output without shelling out to `gum`.
+Tests live under `test/` mirroring `lib/`. `test/test_helper.rb` provides:
+
+- shared boot (`require "minitest/autorun"`, load-path setup, `Dotfiles` requires);
+- `recording_formatter(results, system_calls:, exit_codes:)` — returns an `OutputFormatter` whose `popen_call` / `system_call` / `exit_call` are lambdas recording into the supplied arrays, so you can assert on rendered output without shelling out to `gum`;
+- `FakeSystem` — a `SimpleDelegator` over a real `SystemAdapter` that overrides `execute` to record commands and serve canned `[output, status]` responses for regex/string patterns registered via `#stub`. Filesystem ops fall through to the real adapter, so tests can mix tempdir state with stubbed shell calls.

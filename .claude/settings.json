@@ -1,11 +1,71 @@
 {
-  "model": "opus[1m]",
+  "permissions": {
+    "allow": [
+      "Bash(bin/rails generate:*)",
+      "Bash(bin/rails r *)",
+      "Bash(bin/rails routes:*)",
+      "Bash(bin/rails runner:*)",
+      "Bash(bin/rails test:*)",
+      "Bash(bin/run-tests *)",
+      "Bash(bundle exec:*)",
+      "Bash(bundle show:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(gem list *)",
+      "Bash(gh pr:*)",
+      "Bash(git --no-pager diff *)",
+      "Bash(git --no-pager log *)",
+      "Bash(git --no-pager show *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git stash:*)",
+      "Bash(grep:*)",
+      "Bash(rg *)",
+      "Bash(tmux -V)",
+      "Bash(tmux list-panes:*)",
+      "Bash(tmux list-windows:*)"
+    ],
+    "deny": [
+      "Bash(git -C:*)"
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/scripts/context-bar.sh"
   },
   "enabledPlugins": {
-    "ruby-lsp@claude-plugins-official": true
+    "ruby-lsp@claude-plugins-official": true,
+    "slack@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true
   },
-  "effortLevel": "xhigh"
+  "extraKnownMarketplaces": {
+    "1password-plugins-community": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/agilebits-inc/1password-plugins-community.git",
+        "ref": "main"
+      }
+    }
+  },
+  "effortLevel": "high",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.claude/hooks/no-cd-into-cwd.sh\"",
+            "statusMessage": "Checking for redundant cd"
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.claude/hooks/no-recursive-grep.sh\"",
+            "statusMessage": "Checking for recursive grep"
+          }
+        ]
+      }
+    ]
+  }
 }

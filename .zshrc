@@ -52,6 +52,8 @@ export PKG_CONFIG_PATH="/opt/homebrew/opt/openssl@3/lib/pkgconfig"
 # For Ruby specifically
 export RUBY_CONFIGURE_OPTS="--with-openssl-dir=/opt/homebrew/opt/openssl@3"
 
+export HA_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI4Zjg3ZjlhNjczMjA0Njg0YTU0ZDY4YmVjODEzNjRlNyIsImlhdCI6MTc4MTg2ODg0MSwiZXhwIjoyMDk3MjI4ODQxfQ.9zGReIIzkdzcODcVZQaX3NDMJjQ-W1s8RkSPGc9tZsc"
+
 ## Other Variables
 export LANG=en_US.UTF-8
 export RIPGREP_CONFIG_PATH=~/.ripgreprc
@@ -109,6 +111,19 @@ function gcam() {
   git commit -am $1
 }
 
+# Open a bash shell in the given Kubernetes pod
+function kexec() {
+  kubectl exec -it "$1" -- /bin/bash
+}
+
+function kdebug() {
+  kubectl debug $(kubectl get pod -l app.kubernetes.io/component=workers -o name | head -n1) -it --copy-to=rails-console-lukeabel-1 --container=kolide2 -- bin/rails console 
+}
+
+function kcleanup() {
+  kubectl delete pod rails-console-lukeabel-1
+}
+
 ## Functions
 # Start tmux with a standard layout:
 # Window 0: tall left pane (~63%), two stacked right panes
@@ -129,7 +144,7 @@ function tmux-dev() {
   # Window 0: left pane + two stacked right panes
   # Use explicit cols and lines so we get an accurate split
   tmux new-session -d -s "$session" -x "$(tput cols)" -y "$(tput lines)"
-  tmux split-window -h -p 35 -t "$session" 
+  tmux split-window -h -p 45 -t "$session" 
   tmux split-window -v -t "$session"
   tmux select-pane -t "$session:.0"
 

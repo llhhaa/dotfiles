@@ -112,6 +112,27 @@ cheatsheets:
           - key: "Colorscheme"
             desc: "apprentice"
 
+  - id: sql
+    title: SQL CHEATSHEET
+    display: float
+    sections:
+      - name: INDEXING
+        entries:
+          - key: "1"
+            desc: "Unify index paths for reuse"
+          - key: "2"
+            desc: "Index original data if possible"
+          - key: "3"
+            desc: "Access sets scan range, filter sets scan conditions"
+          - key: "3a"
+            desc: "   Crudely: access good, filter bad"
+          - key: "4"
+            desc: "Equality first, then ranges"
+          - key: "5"
+            desc: "Avoid LIKE with leading wildcards"
+          - key: "6"
+            desc: "If filter can't be avoided, prefer selectivity"
+
   - id: tailwind
     title: TAILWIND CHEATSHEET
     display: telescope
