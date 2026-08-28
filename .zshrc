@@ -402,3 +402,8 @@ fi
 
 
 export PATH="$HOME/.local/bin:$PATH"
+
+# opencode
+if [ -d "$HOME/.opencode/bin" ]; then
+  export PATH="$HOME/.opencode/bin:$PATH"
+fi
