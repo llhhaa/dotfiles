@@ -6,6 +6,8 @@
       "Bash(bin/rails routes:*)",
       "Bash(bin/rails runner:*)",
       "Bash(bin/rails test:*)",
+      "Bash(PARALLEL_WORKERS=1 bin/rails test:*)",
+      "Bash(PARALLEL_WORKERS=1 bundle exec rails test:*)",
       "Bash(bin/run-tests *)",
       "Bash(bundle exec:*)",
       "Bash(bundle show:*)",
@@ -16,6 +18,20 @@
       "Bash(git --no-pager diff *)",
       "Bash(git --no-pager log *)",
       "Bash(git --no-pager show *)",
+      "Bash(git -c color.ui=false log *)",
+      "Bash(git -c color.ui=false status *)",
+      "Bash(git -c color.ui=false branch *)",
+      "Bash(git -c color.ui=false show *)",
+      "Bash(git -c color.ui=false rev-list *)",
+      "Bash(git -c color.ui=false diff *)",
+      "Bash(git -c color.ui=false merge-base *)",
+      "Bash(git -P log *)",
+      "Bash(git -P status *)",
+      "Bash(git -P branch *)",
+      "Bash(git -P show *)",
+      "Bash(git -P rev-list *)",
+      "Bash(git -P diff *)",
+      "Bash(git -P merge-base *)",
       "Bash(git diff *)",
       "Bash(git log *)",
       "Bash(git show *)",
@@ -30,25 +46,6 @@
       "Bash(git -C:*)"
     ]
   },
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/scripts/context-bar.sh"
-  },
-  "enabledPlugins": {
-    "ruby-lsp@claude-plugins-official": true,
-    "slack@claude-plugins-official": true,
-    "frontend-design@claude-plugins-official": true
-  },
-  "extraKnownMarketplaces": {
-    "1password-plugins-community": {
-      "source": {
-        "source": "git",
-        "url": "https://github.com/agilebits-inc/1password-plugins-community.git",
-        "ref": "main"
-      }
-    }
-  },
-  "effortLevel": "high",
   "hooks": {
     "PreToolUse": [
       {
@@ -67,5 +64,32 @@
         ]
       }
     ]
-  }
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/scripts/context-bar.sh"
+  },
+  "enabledPlugins": {
+    "ruby-lsp@claude-plugins-official": true,
+    "slack@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "1password-plugins-community": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/agilebits-inc/1password-plugins-community.git",
+        "ref": "main"
+      }
+    },
+    "1password-plugins-endorsed": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/agilebits-inc/1password-plugins-endorsed.git",
+        "ref": "main"
+      }
+    }
+  },
+  "effortLevel": "high",
+  "verbose": false
 }
