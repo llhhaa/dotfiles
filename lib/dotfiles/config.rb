@@ -39,6 +39,26 @@ class Dotfiles
       config.fetch("applications", [])
     end
 
+    def packages
+      config.fetch("packages", {})
+    end
+
+    def standard_folders
+      config.fetch("standard_folders", [])
+    end
+
+    def debian_sources
+      config.fetch("debian_sources", [])
+    end
+
+    def debian_snap_packages
+      config.fetch("debian_snap_packages", [])
+    end
+
+    def debian_non_apt_packages
+      config.fetch("debian_non_apt_packages", [])
+    end
+
     private
 
     def load_config

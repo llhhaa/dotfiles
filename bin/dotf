@@ -86,8 +86,10 @@ cmd_run() {
     ensure_homebrew_env
     ensure_mise_env
 
-    cd "$DOTFILES_DIR"
-    ruby -r ./lib/dotfiles.rb -e "Dotfiles::Runner.new('$LOG_FILE').run"
+    # Run from $HOME so version-manager pins in the dotfiles dir (.ruby-version)
+    # don't shadow the Ruby we bootstrapped; the lib is loaded by absolute path.
+    cd "$HOME"
+    ruby -r "$DOTFILES_DIR/lib/dotfiles.rb" -e "Dotfiles::Runner.new('$LOG_FILE').run"
 
     debug "Run complete"
 }

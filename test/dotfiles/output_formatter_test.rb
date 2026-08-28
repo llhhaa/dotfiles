@@ -62,6 +62,25 @@ class OutputFormatterTest < Minitest::Test
     assert_empty @exit_codes
   end
 
+  def test_renders_plain_table_when_gum_unavailable
+    formatter = recording_formatter(base_results, system_calls: @system_calls, exit_codes: @exit_codes, gum_available: false)
+
+    assert_output(/Some Step\s+✓\s+No/) { formatter.display }
+    assert_empty @system_calls
+  end
+
+  def test_renders_plain_messages_when_gum_unavailable
+    results = base_results.merge(
+      failed_steps: ["Bad Step"],
+      errors: [{step: "Bad Step", message: "boom"}]
+    )
+    formatter = recording_formatter(results, system_calls: @system_calls, exit_codes: @exit_codes, gum_available: false)
+
+    assert_output(/boom.*Installation Failed!/m) { formatter.display }
+    assert_includes @exit_codes, 1
+    assert_empty @system_calls
+  end
+
   private
 
   def base_results

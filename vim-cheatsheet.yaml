@@ -65,6 +65,19 @@ cheatsheets:
             desc: "Rails.logger.info()"
             arrow: true
 
+      - name: OPENING LINKS (KITTY)
+        entries:
+          - key: "click / ctrl+click"
+            desc: "Open URL under mouse (ctrl inside nvim)"
+          - key: "ctrl+shift+e"
+            desc: "Open URL from screen by hint"
+          - key: "ctrl+shift+p f"
+            desc: "Open file path from screen"
+          - key: "ctrl+shift+p h"
+            desc: "Open git hash from screen"
+          - key: "ctrl+shift+p n"
+            desc: "Open file:line from screen"
+
       - name: HELP
         entries:
           - key: "<Space>?"

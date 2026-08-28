@@ -124,6 +124,13 @@ class Dotfiles
 
     private
 
+    def sudo
+      @sudo ||= begin
+        output, status = @system.execute("id -u")
+        (status == 0 && output.strip == "0") ? "" : "sudo "
+      end
+    end
+
     def debug(message)
       Dotfiles.debug(message)
     end

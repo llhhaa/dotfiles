@@ -3,7 +3,7 @@ not just dotfiles!
 
 ## Automated Setup
 
-`bin/dotf run` provisions the machine from `config/config.yml` via a small Ruby step runner. It bootstraps Homebrew/mise/Ruby/gum, then runs each step in `lib/dotfiles/steps/` in topo-sorted order, skipping any that are already complete (including symlinking the tracked dotfiles into `~`).
+`bin/dotf run` provisions the machine from `config/config.yml` via a small Ruby step runner. It works on macOS and Debian-family Linux. It bootstraps Homebrew/mise/Ruby/gum (rbenv on macOS, apt on Debian), then runs each step in `lib/dotfiles/steps/` in topo-sorted order, skipping any that are already complete (including symlinking the tracked dotfiles into `~`).
 
 `bin/test` runs the Minitest suite under `test/`.
 

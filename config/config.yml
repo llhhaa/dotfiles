@@ -15,9 +15,13 @@ symlinks:
 - { src: kitty.conf,         dest: ~/.config/kitty/kitty.conf }
 - { src: .claude,            dest: ~/.claude }
 packages:
-  gh: { brew: gh, debian: null }
-  ripgrep: { brew: ripgrep, debian: ripgrep }
-  fzf: { brew: fzf, debian: null }
+  gh: { brew: gh, debian: gh }
+  ripgrep: { brew: ripgrep, debian: ripgrep, command: rg }
+  fzf: { brew: fzf, debian: fzf }
+  tmux: { brew: tmux, debian: tmux }
+  zsh: { brew: zsh, debian: zsh }
+  eza: { brew: eza, debian: eza }
+  wl-copy: { brew: null, debian: wl-clipboard }
 debian_sources:
   - name: gierens
     repo: http://deb.gierens.de
@@ -47,7 +51,9 @@ debian_sources:
     line: "deb [signed-by=/usr/share/keyrings/mise-archive-keyring.gpg] https://mise.jdx.dev/deb stable main"
     key_url: https://mise.jdx.dev/gpg-key.pub
 debian_non_apt_packages:
-  - ghostty
+  - name: ghostty
+    repo: mkasberg/ghostty-ubuntu
+    asset_glob: "*_{arch}_{os_version}.deb"
 debian_snap_packages: []
 brew:
   casks:

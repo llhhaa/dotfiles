@@ -45,7 +45,8 @@ return {
     end
   },
   {
-    dir = '~/Repos/cheet.nvim',
+    dir = vim.fn.isdirectory(vim.fn.expand('~/Repos/cheet.nvim')) == 1
+        and '~/Repos/cheet.nvim' or '~/repos/cheet.nvim',
     config = function()
       require('cheet').setup({
         paths = { '~/.config/vim-cheatsheet.yaml' }

@@ -32,12 +32,13 @@ class FakeSystem < SimpleDelegator
 end
 
 class Minitest::Test
-  def recording_formatter(results, system_calls:, exit_codes: [])
+  def recording_formatter(results, system_calls:, exit_codes: [], gum_available: true)
     Dotfiles::OutputFormatter.new(
       results,
       popen_call: ->(_cmd, _mode, &block) { block.call(StringIO.new) },
       system_call: ->(*args) { system_calls << args; true },
-      exit_call: ->(code) { exit_codes << code }
+      exit_call: ->(code) { exit_codes << code },
+      gum_available: ->(_cmd) { gum_available }
     )
   end
 end

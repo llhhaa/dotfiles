@@ -2,11 +2,12 @@ require "csv"
 
 class Dotfiles
   class OutputFormatter
-    def initialize(results, popen_call: IO.method(:popen), system_call: Kernel.method(:system), exit_call: Kernel.method(:exit))
+    def initialize(results, popen_call: IO.method(:popen), system_call: Kernel.method(:system), exit_call: Kernel.method(:exit), gum_available: Dotfiles.method(:command_exists?))
       @results = results
       @popen_call = popen_call
       @system_call = system_call
       @exit_call = exit_call
+      @gum_available = gum_available
     end
 
     def display
@@ -20,11 +21,17 @@ class Dotfiles
     private
 
     def display_results_table
+      return plain_results_table unless gum?
       csv_data = CSV.generate do |csv|
         csv << ["Step", "Status", "Ran?"]
         @results[:table_data].each { |row| csv << row }
       end
       @popen_call.call(["gum", "table", "--border", "rounded", "--widths", "25,8,8", "--print"], "w") { |io| io.write(csv_data) }
+    end
+
+    def plain_results_table
+      puts format("%-25s %-8s %s", "Step", "Status", "Ran?")
+      @results[:table_data].each { |row| puts format("%-25s %-8s %s", *row) }
     end
 
     def display_errors
@@ -64,7 +71,12 @@ class Dotfiles
     end
 
     def gum_style(color, lines, border: "rounded", width: 60)
+      return puts(lines) unless gum?
       @system_call.call("gum", "style", "--foreground", color, "--border", border, "--align", "left", "--width", width.to_s, "--margin", "1 0", "--padding", "1 2", *lines)
+    end
+
+    def gum?
+      @gum_available.call("gum")
     end
   end
 end
