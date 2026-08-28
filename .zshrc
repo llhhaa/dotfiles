@@ -11,15 +11,22 @@ plugins=(git z)
 source $ZSH/oh-my-zsh.sh
 
 # initialize homebrew
-eval "$(/opt/homebrew/bin/brew shellenv)"
+if [ -x /opt/homebrew/bin/brew ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
+# initialize mise (if present)
+command -v mise >/dev/null 2>&1 && eval "$(mise activate zsh)"
 
 # make sure keys are added to the agent
-if ! ssh-add -l | grep -q "luke.abel@agilebits.com"; then
-  ssh-add --apple-use-keychain ~/.ssh/id_ed25519
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  if ! ssh-add -l | grep -q "luke.abel@agilebits.com"; then
+    ssh-add --apple-use-keychain ~/.ssh/id_ed25519
+  fi
+  # if ! ssh-add -l | grep -q "luke.abel@gmail.com"; then
+  #   ssh-add --apple-use-keychain ~/.ssh/id_ed25519_pers
+  # fi
 fi
-# if ! ssh-add -l | grep -q "luke.abel@gmail.com"; then
-#   ssh-add --apple-use-keychain ~/.ssh/id_ed25519_pers
-# fi
 
 # initialize fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
@@ -37,20 +44,22 @@ zstyle ':completion:*' completer _expand _complete _correct _approximate
 ## Paths 'n Flags
 export USER_BIN=~/bin
 export PATH=${USER_BIN}:$PATH
-export PATH="/usr/local/sbin:$PATH"
-export PATH="$(brew --prefix)/opt/libpq/bin:$PATH"
-export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
-export CPPFLAGS="-I$(brew --prefix)/opt/libpq/include"
-export LDFLAGS="-L$(brew --prefix)/opt/libpq/lib"
-export PKG_CONFIG_PATH="$(brew --prefix)/opt/libpq/lib/pkgconfig"
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  export PATH="/usr/local/sbin:$PATH"
+  export PATH="$(brew --prefix)/opt/libpq/bin:$PATH"
+  export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+  export CPPFLAGS="-I$(brew --prefix)/opt/libpq/include"
+  export LDFLAGS="-L$(brew --prefix)/opt/libpq/lib"
+  export PKG_CONFIG_PATH="$(brew --prefix)/opt/libpq/lib/pkgconfig"
 
-# Force use of OpenSSL 3.5
-export PATH="/opt/homebrew/opt/openssl@3.5/bin:$PATH"
-export LDFLAGS="-L/opt/homebrew/opt/openssl@3/lib"
-export CPPFLAGS="-I/opt/homebrew/opt/openssl@3/include"
-export PKG_CONFIG_PATH="/opt/homebrew/opt/openssl@3/lib/pkgconfig"
-# For Ruby specifically
-export RUBY_CONFIGURE_OPTS="--with-openssl-dir=/opt/homebrew/opt/openssl@3"
+  # Force use of OpenSSL 3.5
+  export PATH="/opt/homebrew/opt/openssl@3.5/bin:$PATH"
+  export LDFLAGS="-L/opt/homebrew/opt/openssl@3/lib"
+  export CPPFLAGS="-I/opt/homebrew/opt/openssl@3/include"
+  export PKG_CONFIG_PATH="/opt/homebrew/opt/openssl@3/lib/pkgconfig"
+  # For Ruby specifically
+  export RUBY_CONFIGURE_OPTS="--with-openssl-dir=/opt/homebrew/opt/openssl@3"
+fi
 
 export HA_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI4Zjg3ZjlhNjczMjA0Njg0YTU0ZDY4YmVjODEzNjRlNyIsImlhdCI6MTc4MTg2ODg0MSwiZXhwIjoyMDk3MjI4ODQxfQ.9zGReIIzkdzcODcVZQaX3NDMJjQ-W1s8RkSPGc9tZsc"
 
@@ -66,6 +75,16 @@ elif [[ -n $CODESPACES ]]; then
   export EDITOR='vim.tiny'
 else
   export EDITOR='nvim'
+fi
+
+# Clipboard shims: expose pbcopy/pbpaste on linux (wayland or x11)
+if ! command -v pbcopy >/dev/null 2>&1; then
+  pbcopy() {
+    if command -v wl-copy >/dev/null 2>&1; then wl-copy; else xclip -selection clipboard; fi
+  }
+  pbpaste() {
+    if command -v wl-paste >/dev/null 2>&1; then wl-paste; else xclip -selection clipboard -o; fi
+  }
 fi
 
 ## Aliases
@@ -179,7 +198,11 @@ function rga() {
 # find and replace. leave second arg blank for find-and-remove.
 # supports filenames with whitespace.
 function rgr() {
-  rg $1 --files-with-matches -0 | xargs -0 sed -i '' "s/$1/$2/g"
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    rg $1 --files-with-matches -0 | xargs -0 sed -i '' "s/$1/$2/g"
+  else
+    rg $1 --files-with-matches -0 | xargs -0 sed -i "s/$1/$2/g"
+  fi
 }
 
 # count occurrences of arg
@@ -197,7 +220,14 @@ function rgelement() {
 # It hides the curser while the countdown is running, and then displays a message
 # when the countdown is complete, and restores the cursor visibility.
 function caffdown() {
-  caffeinate -dimsut $1 &
+  if command -v caffeinate >/dev/null 2>&1; then
+    caffeinate -dimsut $1 &
+  elif command -v systemd-inhibit >/dev/null 2>&1; then
+    systemd-inhibit --what=sleep:idle:handle-lid-switch --mode=block sleep $1 &
+  else
+    echo "No caffeinate or systemd-inhibit available; skipping keep-awake."
+    return 1
+  fi
   local caffeinate_pid=$!
   tput civis
 

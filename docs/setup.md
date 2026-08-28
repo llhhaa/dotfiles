@@ -1,6 +1,6 @@
 # Automated Setup
 
-A Ruby-based runner that idempotently sets up a development environment from a declarative config file. It targets macOS primarily, with some Debian-aware plumbing in `config.yml`.
+A Ruby-based runner that idempotently sets up a development environment from a declarative config file. It runs on macOS and Debian-family Linux (Ubuntu/Pop!_OS); macOS-only steps (brew casks, `defaults write`) and Debian-only steps (apt sources/packages, snap, GitHub-release `.deb`s) are gated by platform and skipped elsewhere.
 
 ## Quick start
 
@@ -10,15 +10,17 @@ DEBUG=true bin/dotf run # also stream debug output to the console
 bin/dotf help
 ```
 
+Debian steps shell out through `sudo`, so run `bin/dotf run` from an interactive terminal there; you'll be prompted for your password when apt-backed steps execute.
+
 ## How it works
 
 `bin/dotf` is the entry point. On `run` it:
 
 1. Opens a timestamped log file under `logs/` (always written; `DEBUG=true` additionally tees to stdout).
-2. Invokes `bin/bootstrap` to install shell prerequisites — Homebrew (macOS only), mise, Ruby ≥ 3.x (via `rbenv` by default, or `mise` if `RUBY_VERSION_MANAGER=mise`), and `gum`.
+2. Invokes `bin/bootstrap` to install shell prerequisites — Homebrew (macOS only), mise, Ruby ≥ 3.x (via `rbenv` on macOS, `apt` on Debian with a mise fallback, or `mise` elsewhere; override with `RUBY_VERSION_MANAGER`), and `gum`.
 3. Re-evaluates the Homebrew and mise environments so freshly-installed binaries are on `PATH`.
 4. Loads `lib/dotfiles.rb`, which auto-requires every step under `lib/dotfiles/steps/`. Files are sorted by directory depth so foundational top-level steps (e.g. `SymlinkDotfilesStep`) load before nested platform-specific ones (e.g. `steps/mac/*`); within the same depth the order is alphabetical.
-5. `Dotfiles::Runner` topologically sorts steps by their `depends_on` declarations (load order is the tiebreaker), runs each one in order (skipping any whose `complete?` already returns true, or whose `macos_only` / `debian_only` gate doesn't match the host), then renders a results table via `gum`.
+5. `Dotfiles::Runner` topologically sorts steps by their `depends_on` declarations (load order is the tiebreaker), runs each one in order (skipping any whose `complete?` already returns true, or whose `macos_only` / `debian_only` gate doesn't match the host), then renders a results table via `gum` (falling back to plain text if `gum` isn't available).
 
 The runner is designed to be re-runnable — `complete?` is the contract that lets a step be skipped on subsequent runs.
 
@@ -26,10 +28,10 @@ The runner is designed to be re-runnable — `complete?` is the contract that le
 
 | Path | Purpose |
 | --- | --- |
-| `bin/dotf` | CLI entry point (`run`, `help`). Sets up logging, calls `bootstrap`, then shells into the Ruby runner. |
-| `bin/bootstrap` | Shell prerequisites — Homebrew, mise, Ruby (≥ 3.x), gum. Idempotent; safe to re-run. |
+| `bin/dotf` | CLI entry point (`run`, `help`). Sets up logging, calls `bootstrap`, then shells into the Ruby runner (from `$HOME`, so `.ruby-version` in the repo can't shadow the bootstrapped Ruby). |
+| `bin/bootstrap` | Shell prerequisites — Homebrew, mise, Ruby (≥ 3.x), gum. Platform-aware: rbenv on macOS, apt on Debian, mise otherwise. Idempotent; safe to re-run. |
 | `bin/test` | Minitest runner. Loads every `test/**/*_test.rb`; forwards Minitest flags like `--name <pattern>` and `--seed <n>`. |
-| `config/config.yml` | Declarative inputs: `dotfiles_repo`, `master_hostname`, `standard_folders`, `symlinks`, cross-platform `packages`, `debian_sources` / `debian_non_apt_packages` / `debian_snap_packages`, `brew.casks`, `applications`, `unmanaged_apps`, `animation_settings`, `screenshot_settings`, `login_items`, `config_directory_items`, `file_associations`. |
+| `config/config.yml` | Declarative inputs: `dotfiles_repo`, `master_hostname`, `standard_folders`, `symlinks`, cross-platform `packages` (per-platform name + optional `command` override), `debian_sources` / `debian_snap_packages` / `debian_non_apt_packages` (GitHub-release `.deb`s), `brew.casks`, `applications`, `unmanaged_apps`, `animation_settings`, `screenshot_settings`, `login_items`, `config_directory_items`, `file_associations`. |
 | `lib/dotfiles.rb` | Top-level entry. Triggers `Loader.load!`, owns the log file handle, exposes `Dotfiles.debug` / `debug_benchmark` / `command_exists?` / `determine_dotfiles_dir`. |
 | `lib/dotfiles/loader.rb` | Adds `lib/dotfiles` to `$LOAD_PATH`, requires core classes, then globs and requires every file under `steps/`. |
 | `lib/dotfiles/runner.rb` | Orchestrates execution: builds step params, runs steps serially in topo order, then collects per-step results in parallel threads and hands them to the output formatter. |
@@ -38,8 +40,12 @@ The runner is designed to be re-runnable — `complete?` is the contract that le
 | `lib/dotfiles/step/defaults_configurable.rb` | Convenience mixin for steps that are purely a `defaults write`. Auto-applies `macos_only`, defines `run` / `complete?` / `update`, and lets the subclass declare `defaults_config_key` / `defaults_display_name`. |
 | `lib/dotfiles/system_adapter.rb` | Thin wrapper around the shell (`Open3`), filesystem (`FileUtils`), and platform detection (`macos?`, `debian?`). Mockable in tests. |
 | `lib/dotfiles/config.rb` | Loads `config/config.yml` once and exposes typed accessors (`dotfiles_repo`, `home`, `brew_casks`, `applications`, plus `[]` / `fetch`). |
-| `lib/dotfiles/output_formatter.rb` | Renders the final results table, errors, warnings, and notices via `gum table` and `gum style`. Exits 1 if any step is incomplete. |
+| `lib/dotfiles/output_formatter.rb` | Renders the final results table, errors, warnings, and notices via `gum table` and `gum style`, falling back to plain text when `gum` isn't installed. Exits 1 if any step is incomplete. |
+| `lib/dotfiles/steps/create_standard_folders_step.rb` | Cross-platform. Creates the `standard_folders` from `config.yml` (e.g. `~/repos`, `~/personal`). |
+| `lib/dotfiles/steps/install_oh_my_zsh_step.rb` | Cross-platform. Clones oh-my-zsh into `~/.oh-my-zsh` (the `.zshrc` depends on it). |
+| `lib/dotfiles/steps/install_packages_step.rb` | Cross-platform. Installs the `packages` map from `config.yml` — `brew install <brew>` on macOS, `sudo apt-get install -y <debian>` on Debian (with an `apt-get update` first). Entries whose platform name is `null` are unmanaged on that platform. `command:` overrides the binary name checked for idempotency (e.g. `ripgrep` → `rg`). |
 | `lib/dotfiles/steps/symlink_dotfiles_step.rb` | Cross-platform. Reads the `symlinks` list from `config.yml` and links each entry into `$HOME`, backing up real files to `<dest>.bak` and replacing stale symlinks. |
+| `lib/dotfiles/steps/debian/` | Debian-only steps. `InstallAptSourcesStep` writes keyrings (`curl | gpg --dearmor`, or a plain copy for binary `.gpg` keys) and `/etc/apt/sources.list.d/<name>.list` entries from `debian_sources`; `InstallSnapPackagesStep` installs `debian_snap_packages`; `InstallNonAptPackagesStep` installs `debian_non_apt_packages` by picking the `{arch}`/`{os_version}`-substituted `asset_glob` from the configured GitHub repo's latest release and installing the `.deb` via apt. |
 | `lib/dotfiles/steps/mac/` | macOS-only steps. `ConfigureScreenshotsStep` and `DisableAnimationsStep` (both `DefaultsConfigurable`); `InstallBrewCasksStep` (diffs `config.brew_casks` against `brew list --cask` and installs the missing ones). |
 | `mise.toml` | Pins `gum` for mise users (the `gum` CLI is required by the output formatter). |
 | `test/` | Minitest suite. `test_helper.rb` holds shared boot + a `recording_formatter` helper. Mirrors `lib/` layout (`test/dotfiles/steps/foo_step_test.rb` ↔ `lib/dotfiles/steps/foo_step.rb`). |

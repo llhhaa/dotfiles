@@ -161,8 +161,8 @@ vim.keymap.set('n', '<leader>yf', function()
 end)
 
 -- commands
-vim.keymap.set('ia', 'def@', 'def<CR>end<Up>')
-vim.keymap.set('ia', 'info@', 'Rails.logger.info()<Left>')
+vim.keymap.set('i', 'def@', 'def<CR>end<Up>')
+vim.keymap.set('i', 'info@', 'Rails.logger.info()<Left>')
 
 -- Below is a function to run a command in given directory, followed by two keymappings that use
 -- that function. If the keymappings were adapted from Vimscript, and they were found incorrect,
