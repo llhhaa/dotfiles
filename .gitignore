@@ -37,6 +37,7 @@ gemrc
 .claude/tasks/
 .claude/.last-cleanup
 CLAUDE.local.md
+!.claude/skills/handoff
 
 # Logs
 logs/
