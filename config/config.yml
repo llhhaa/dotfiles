@@ -22,6 +22,7 @@ packages:
   zsh: { brew: zsh, debian: zsh }
   eza: { brew: eza, debian: eza }
   wl-copy: { brew: null, debian: wl-clipboard }
+  wmctrl: { brew: null, debian: wmctrl }
 debian_sources:
   - name: gierens
     repo: http://deb.gierens.de
@@ -54,6 +55,9 @@ debian_non_apt_packages:
   - name: ghostty
     repo: mkasberg/ghostty-ubuntu
     asset_glob: "*_{arch}_{os_version}.deb"
+  - name: ulauncher
+    repo: Ulauncher/Ulauncher
+    asset_glob: "ulauncher_*_all.deb"
 debian_snap_packages: []
 brew:
   casks:
