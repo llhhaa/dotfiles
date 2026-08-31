@@ -24,12 +24,24 @@ class Dotfiles
         status == 0
       end
 
-      def skill_dir(name)
-        File.join(skills_dir, name)
+      def managed_dirs
+        [skills_dir]
       end
 
-      def skill_path(name)
-        File.join(skills_dir, name, "SKILL.md")
+      def names_for(dir, targeted)
+        targeted.map(&:name)
+      end
+
+      def path_for(dir, name)
+        File.join(dir, name, "SKILL.md")
+      end
+
+      def prune_path(dir, name)
+        File.join(dir, name)
+      end
+
+      def content_for(dir, definition)
+        render(definition)
       end
 
       def render(definition)

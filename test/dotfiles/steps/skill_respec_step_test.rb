@@ -44,6 +44,7 @@ class SkillRespecStepTest < Minitest::Test
     step.run
 
     assert File.exist?(File.join(@home, ".config", "opencode", "skills", "handoff", "SKILL.md"))
+    assert File.exist?(File.join(@home, ".config", "opencode", "command", "handoff.md"))
     assert(step.notices.any? { |notice| notice[:title] == "Wrote skill" })
     assert step.complete?
   end

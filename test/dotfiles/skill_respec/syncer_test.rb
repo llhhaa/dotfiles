@@ -23,7 +23,7 @@ class SkillRespecSyncerTest < Minitest::Test
   def test_writes_targeted_skills_to_installed_harness
     changes = build_syncer.call
 
-    written = changes.select { |change| change.action == :write }.map(&:skill)
+    written = changes.select { |change| change.action == :write && change.dir == opencode_skills }.map(&:skill)
     assert_equal %w[handoff pickup], written.sort
     assert_equal expected_skill(handoff_frontmatter, "handoff body."), File.read(skill_path(opencode_skills, "handoff"))
     assert_equal expected_skill(pickup_frontmatter, "pickup body."), File.read(skill_path(opencode_skills, "pickup"))
@@ -34,6 +34,14 @@ class SkillRespecSyncerTest < Minitest::Test
 
     refute File.exist?(claude_skills), "uninstalled harness should leave no skills dir"
     refute File.exist?(manifest_path(claude_skills))
+  end
+
+  def test_claude_harness_manages_skills_only
+    syncer = build_syncer(claude: 0)
+    syncer.call
+
+    assert File.exist?(skill_path(claude_skills, "handoff"))
+    refute File.exist?(File.join(@home, ".claude", "commands"))
   end
 
   def test_exclusive_skill_not_written_to_other_harness
@@ -50,6 +58,40 @@ class SkillRespecSyncerTest < Minitest::Test
 
     assert_includes File.read(skill_path(opencode_skills, "handoff")), "slash: true"
     refute_includes File.read(skill_path(claude_skills, "handoff")), "slash"
+  end
+
+  def test_generates_command_file_for_slash_skills
+    build_syncer.call
+
+    assert_equal expected_command("Compact the conversation.", "handoff body."), File.read(command_path("handoff"))
+    refute File.exist?(command_path("pickup")), "non-slash skill should not get a command"
+  end
+
+  def test_writes_command_manifest
+    build_syncer.call
+
+    assert_equal %w[handoff], JSON.parse(File.read(manifest_path(command_dir)))
+  end
+
+  def test_overwrites_drifted_command
+    FileUtils.mkdir_p(command_dir)
+    File.write(command_path("handoff"), "hand-edited content")
+
+    build_syncer.call
+
+    assert_equal expected_command("Compact the conversation.", "handoff body."), File.read(command_path("handoff"))
+  end
+
+  def test_prunes_command_when_slash_removed
+    write_source("handoff", "name: handoff\ndescription: Compact the conversation.\n")
+    write_manifest(command_dir, %w[handoff])
+    FileUtils.mkdir_p(command_dir)
+    File.write(command_path("handoff"), "stale command")
+
+    build_syncer.call
+
+    refute File.exist?(command_path("handoff"))
+    assert File.exist?(skill_path(opencode_skills, "handoff")), "skill copy should survive slash removal"
   end
 
   def test_overwrites_drifted_skill_with_same_name
@@ -139,6 +181,14 @@ class SkillRespecSyncerTest < Minitest::Test
     File.join(@home, ".config", "opencode", "skills")
   end
 
+  def command_dir
+    File.join(@home, ".config", "opencode", "command")
+  end
+
+  def command_path(name)
+    File.join(command_dir, "#{name}.md")
+  end
+
   def skill_path(skills_dir, name)
     File.join(skills_dir, name, "SKILL.md")
   end
@@ -181,6 +231,10 @@ class SkillRespecSyncerTest < Minitest::Test
 
   def expected_skill(frontmatter, body)
     "---\n#{frontmatter}---\n\n#{body}\n"
+  end
+
+  def expected_command(description, body)
+    "---\ndescription: #{description}\n---\n\n#{body}\n"
   end
 
   def handoff_frontmatter
