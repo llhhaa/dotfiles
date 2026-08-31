@@ -37,7 +37,14 @@ gemrc
 .claude/tasks/
 .claude/.last-cleanup
 CLAUDE.local.md
-!.claude/skills/handoff
+
+# Generated skill copies (written by SkillRespecStep)
+.claude/skills/*
+!.claude/skills/assay
+!.claude/skills/diagnosing-bugs
+!.claude/skills/feature-blueprint
+!.claude/skills/feature-build
+!.claude/skills/feature-survey
 
 # Logs
 logs/

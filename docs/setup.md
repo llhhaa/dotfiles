@@ -32,6 +32,7 @@ The runner is designed to be re-runnable — `complete?` is the contract that le
 | `bin/bootstrap` | Shell prerequisites — Homebrew, mise, Ruby (≥ 3.x), gum. Platform-aware: rbenv on macOS, apt on Debian, mise otherwise. Idempotent; safe to re-run. |
 | `bin/test` | Minitest runner. Loads every `test/**/*_test.rb`; forwards Minitest flags like `--name <pattern>` and `--seed <n>`. |
 | `config/config.yml` | Declarative inputs: `dotfiles_repo`, `master_hostname`, `standard_folders`, `symlinks`, cross-platform `packages` (per-platform name + optional `command` override), `debian_sources` / `debian_snap_packages` / `debian_non_apt_packages` (GitHub-release `.deb`s), `brew.casks`, `applications`, `unmanaged_apps`, `animation_settings`, `screenshot_settings`, `login_items`, `config_directory_items`, `file_associations`. |
+| `skills/` | Harness-agnostic skill definitions (`<name>/SKILL.md`) consumed by `SkillRespecStep`. See [Skills](#skills). |
 | `lib/dotfiles.rb` | Top-level entry. Triggers `Loader.load!`, owns the log file handle, exposes `Dotfiles.debug` / `debug_benchmark` / `command_exists?` / `determine_dotfiles_dir`. |
 | `lib/dotfiles/loader.rb` | Adds `lib/dotfiles` to `$LOAD_PATH`, requires core classes, then globs and requires every file under `steps/`. |
 | `lib/dotfiles/runner.rb` | Orchestrates execution: builds step params, runs steps serially in topo order, then collects per-step results in parallel threads and hands them to the output formatter. |
@@ -40,16 +41,36 @@ The runner is designed to be re-runnable — `complete?` is the contract that le
 | `lib/dotfiles/step/defaults_configurable.rb` | Convenience mixin for steps that are purely a `defaults write`. Auto-applies `macos_only`, defines `run` / `complete?` / `update`, and lets the subclass declare `defaults_config_key` / `defaults_display_name`. |
 | `lib/dotfiles/system_adapter.rb` | Thin wrapper around the shell (`Open3`), filesystem (`FileUtils`), and platform detection (`macos?`, `debian?`). Mockable in tests. |
 | `lib/dotfiles/config.rb` | Loads `config/config.yml` once and exposes typed accessors (`dotfiles_repo`, `home`, `brew_casks`, `applications`, plus `[]` / `fetch`). |
+| `lib/dotfiles/skill_respec/` | The skill-respec module. `Definition` parses/validates a `skills/` source; `Harness` subclasses (`ClaudeHarness`, `OpencodeHarness`) know each harness's CLI binary, skills directory, and frontmatter rendering; `Manifest` tracks ownership per harness dir; `Syncer` reconciles sources with destinations (write/prune/drift detection). |
 | `lib/dotfiles/output_formatter.rb` | Renders the final results table, errors, warnings, and notices via `gum table` and `gum style`, falling back to plain text when `gum` isn't installed. Exits 1 if any step is incomplete. |
 | `lib/dotfiles/steps/create_standard_folders_step.rb` | Cross-platform. Creates the `standard_folders` from `config.yml` (e.g. `~/repos`, `~/personal`). |
 | `lib/dotfiles/steps/install_oh_my_zsh_step.rb` | Cross-platform. Clones oh-my-zsh into `~/.oh-my-zsh` (the `.zshrc` depends on it). |
 | `lib/dotfiles/steps/install_packages_step.rb` | Cross-platform. Installs the `packages` map from `config.yml` — `brew install <brew>` on macOS, `sudo apt-get install -y <debian>` on Debian (with an `apt-get update` first). Entries whose platform name is `null` are unmanaged on that platform. `command:` overrides the binary name checked for idempotency (e.g. `ripgrep` → `rg`). |
 | `lib/dotfiles/steps/symlink_dotfiles_step.rb` | Cross-platform. Reads the `symlinks` list from `config.yml` and links each entry into `$HOME`, backing up real files to `<dest>.bak` and replacing stale symlinks. |
+| `lib/dotfiles/steps/skill_respec_step.rb` | Cross-platform. Writes each `skills/` definition into the skills directory of every *installed* harness (`~/.claude/skills`, `~/.config/opencode/skills`) as real files, overwriting same-named skills and pruning ones it previously wrote (via the `.skill-respec.json` manifest). Never touches skills it doesn't own; skips harnesses whose CLI isn't installed. |
 | `lib/dotfiles/steps/debian/` | Debian-only steps. `InstallAptSourcesStep` writes keyrings (`curl | gpg --dearmor`, or a plain copy for binary `.gpg` keys) and `/etc/apt/sources.list.d/<name>.list` entries from `debian_sources`; `InstallSnapPackagesStep` installs `debian_snap_packages`; `InstallNonAptPackagesStep` installs `debian_non_apt_packages` by picking the `{arch}`/`{os_version}`-substituted `asset_glob` from the configured GitHub repo's latest release and installing the `.deb` via apt. |
 | `lib/dotfiles/steps/mac/` | macOS-only steps. `ConfigureScreenshotsStep` and `DisableAnimationsStep` (both `DefaultsConfigurable`); `InstallBrewCasksStep` (diffs `config.brew_casks` against `brew list --cask` and installs the missing ones). |
 | `mise.toml` | Pins `gum` for mise users (the `gum` CLI is required by the output formatter). |
 | `test/` | Minitest suite. `test_helper.rb` holds shared boot + a `recording_formatter` helper. Mirrors `lib/` layout (`test/dotfiles/steps/foo_step_test.rb` ↔ `lib/dotfiles/steps/foo_step.rb`). |
 | `logs/` | Timestamped per-run log files. Gitignored. |
+
+## Skills
+
+`skills/<name>/SKILL.md` is the source of truth for a skill: common frontmatter (`name`, `description`), optional targeting (`harnesses: [claude, opencode]`, omitted = all harnesses), and optional per-harness frontmatter overrides keyed by harness name:
+
+```yaml
+---
+name: handoff
+description: Compact the current conversation into a handoff document for another agent to pick up.
+harnesses: [claude, opencode]
+opencode:
+  slash: true
+---
+```
+
+`SkillRespecStep` regenerates the per-harness copies (real files, gitignored where they land inside the repo). To add a harness, add a `Harness` subclass and register it in `SkillRespec::HARNESSES`.
+
+Known caveat: opencode auto-loads `~/.claude/skills/`, so a claude-only skill still surfaces in opencode on devices where both are installed. Exclude it there with `permission: { skill: { <name>: "deny" } }` in `opencode.json`.
 
 ## Adding a new step
 

@@ -17,6 +17,12 @@ class Dotfiles
       require "step"
       require "step/defaultable"
       require "step/defaults_configurable"
+      require "skill_respec/definition"
+      require "skill_respec/harness"
+      require "skill_respec/claude_harness"
+      require "skill_respec/opencode_harness"
+      require "skill_respec/manifest"
+      require "skill_respec/syncer"
     end
 
     def self.require_steps

@@ -1,6 +1,9 @@
 ---
 name: pickup
 description: Resume work from a handoff
+harnesses: [claude, opencode]
+opencode:
+  slash: true
 ---
 
 Retrieve a handoff based on the user's prompt. If it's not clear which handoff the user wants, ask for clarification or present a picker.
